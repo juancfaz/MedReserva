@@ -1,0 +1,24 @@
+{
+  "name": "sbrs",
+  "version": "1.0.0",
+  "description": "Small Bussiness Reservation System",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juancfaz/SBRS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/juancfaz/SBRS/issues"
+  },
+  "homepage": "https://github.com/juancfaz/SBRS#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

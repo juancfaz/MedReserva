@@ -22,5 +22,8 @@ document.querySelector("form").addEventListener("submit", function (e) {
         return;
     }
 
+    // Si todo está bien, enviar el formulario
+    this.submit();
+
     alert("Booking successful!");
 });

@@ -152,3 +152,26 @@ Una vez creado el archivo app.js agregue <script src="app.js"></script> a mi htm
 
 2. Validar nombre y fecha.
 Agregamos la captura de un evento del formulario al mandar la reservacion se pregunta si el nombre no esta vacio y si la fecha no este vacia y que la fecha sea actual.
+
+# 🗓️ 25 de julio del 2025.
+
+## 🎯 Objetivo: 
+Crear un servidor básico con Node.js y Express para procesar el formulario de reservas y preparar conexión con una base de datos (ej: SQLite o MongoDB más adelante).
+
+---
+
+## ❓ Preguntas clave.
+
+### ¿Qué es Node.js y para qué sirve?
+
+    
+### ¿Qué es Express.js?
+
+
+### ¿Cómo se hace validación en el cliente?
+
+
+Ejemplo: verificar que el campo de nombre no esté vacío.
+
+## ✅ Tareas realizadas.
+
