@@ -1,6 +1,6 @@
 # 🗓️ 24 de julio del 2025.
 
-## 🎯 Objetivo: 
+## 🎯 Objetivo:
 Aprender a estructurar contenido con HTML y aplicar estilos básicos con CSS en una página web.
 
 ---
@@ -78,7 +78,7 @@ Su propósito es **definir la estructura y el contenido** de una página, organi
 
 # 🗓️ 25 de julio del 2025.
 
-## 🎯 Objetivo: 
+## 🎯 Objetivo:
 Adaptar la interfaz para diferentes tamaños de pantalla.
 
 ---
@@ -96,7 +96,6 @@ Las media queries en CSS te permiten adaptar el diseño de una página web segú
 ## ✅ Tareas realizadas.
 
 1. Hacer que el formulario se vea bien en móvil y escritorio.
-
 Usamos Flexbox y agregamos un <div class="container"> ya que Flexbox se aplica sobre contenedores.
 
 En style.css aplicamos propiedades como display: flex, flex-direction: column, align-items: center y justify-content: center para centrar el contenido.
@@ -104,7 +103,6 @@ En style.css aplicamos propiedades como display: flex, flex-direction: column, a
 También se usó max-width en el formulario para limitar su tamaño en pantallas grandes y width: 100% para adaptarlo en móviles.
 
 2. Añadir elementos de navegación (menú, footer).
-
 El menú se colocó al inicio del <body> dentro de una etiqueta <nav>, usando una lista de enlaces (<ul><li><a>).
 
 Se usó Flexbox para alinearlos horizontalmente con display: flex, justify-content: center y gap para separarlos.
@@ -115,7 +113,7 @@ Contiene un mensaje simple de derechos reservados y se estilizó para quedar cen
 
 # 🗓️ 25 de julio del 2025.
 
-## 🎯 Objetivo: 
+## 🎯 Objetivo:
 Agregar interactividad básica al formulario usando JavaScript. Validar que los datos no estén vacíos y que la fecha/hora sea válida.
 
 ---
@@ -155,7 +153,7 @@ Agregamos la captura de un evento del formulario al mandar la reservacion se pre
 
 # 🗓️ 25 de julio del 2025.
 
-## 🎯 Objetivo: 
+## 🎯 Objetivo:
 Crear un servidor básico con Node.js y Express para procesar el formulario de reservas y preparar conexión con una base de datos (ej: SQLite o MongoDB más adelante).
 
 ---
@@ -163,15 +161,64 @@ Crear un servidor básico con Node.js y Express para procesar el formulario de r
 ## ❓ Preguntas clave.
 
 ### ¿Qué es Node.js y para qué sirve?
-
+Es un entorno de ejecucion para JavaScript del lado del servidor. Permite crear servidores web, manejar archivos, conectarse a bases de datos, etc.
     
 ### ¿Qué es Express.js?
-
-
-### ¿Cómo se hace validación en el cliente?
-
-
-Ejemplo: verificar que el campo de nombre no esté vacío.
+Es un framework (estructura estandarizada que proporciona un conjunto de herramientas, bibliotecas y convenciones para desarrollar software) para Node.js que simplifica la creacion de servidores HTTP. 
 
 ## ✅ Tareas realizadas.
 
+1. Inicializar proyecto Node.
+
+Desde la terminal (en la carpeta del proyecto):
+    ```bash
+    npm init -y
+    ```
+
+2. Instalar Express.
+    ```bash
+    npm install express
+    ```
+
+3. Crear server.js
+El archivo server.js funciona como el backend del sistema, usando Node.js y Express para recibir datos del formulario, validar la información y responder al cliente. Además, sirve archivos estáticos y está preparado para conectarse a una base de datos en futuras mejoras.
+
+4. Estructura del proyecto.
+Actualizamos el directorio de los archivos para darle una forma mas formal a mi proyecto.
+
+5. Modificar el HTML.
+En el formulario HTML añadi <form action="/reserve" method="POST">
+
+# 🗓️ 25 de julio del 2025.
+
+## 🎯 Objetivo:
+Guardar las reservas realizadas en una base de datos real para que no se pierdan al reiniciar el servidor.
+
+---
+
+## 🔧 Elección del motor de base de datos
+
+### Vamos a usar SQLite, porque:
+
+- **Es ligero y local (no necesitas instalar un servidor externo).**
+
+- **Guarda los datos en un solo archivo .db.**
+
+- **Ideal para aprender.**
+
+- **Se puede migrar fácilmente a MySQL o PostgreSQL después.**
+
+
+## ✅ Tareas realizadas.
+
+1. Instalar SQLite y librería para Node.js
+Abrimos la terminal en el proyecto y ejecutamos:
+    ```bash
+    npm install sqlite3
+    ```
+
+2. Crear archivo db.js
+Este archivo manejará la conexión y las operaciones de base de datos.
+
+3. Conectar server.js con la base de datos
+Modificamos el archivo server.js para usar db.js.
