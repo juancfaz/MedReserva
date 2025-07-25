@@ -1,45 +1,54 @@
-# 24 de julio del 2025
+# 🗓️ 24 de julio del 2025.
 
-## Objetivo: Aprender a estructurar contenido y dar estilo básico a una página.
+## 🎯 Objetivo: 
+Aprender a estructurar contenido con HTML y aplicar estilos básicos con CSS en una página web.
 
-## Preguntas clave:
+---
 
-* ¿Qué es HTML y cuál es su propósito?
-Es el lenguaje estándar para crear páginas web. Su proposito es estructurar el contenido de las páginas web.
+## ❓ Preguntas clave.
 
-* ¿Qué etiquetas se usan para encabezados, formularios y navegación?
-Encabezados: <h1>, <h2>, ..., <h6>. Del mas al menos importante.
-Formularios: <form>, <input>, <label>, <textarea>, <select>, <option>, <button>, <fieldset>, y <legend>.  Estas etiquetas permiten crear campos de entrada, listas desplegables, botones, áreas de texto y organizar los campos del formulario.
-Navegación: <nav> (se usa para definir una sección de navegación) y <a> (crea enlaces).
+### ¿Qué es HTML y cuál es su propósito?
+HTML (HyperText Markup Language) es el lenguaje estándar para crear páginas web. Su propósito es **definir la estructura y el contenido** de una página, organizando elementos como encabezados, párrafos, listas, formularios, enlaces, imágenes, etc.
 
-* ¿Cómo se hace que una página sea responsive?
-1. Planifica el sitio web.
-2. Codifica con HTML y CSS.
-3. Prueba tus versiones.
+### ¿Qué etiquetas se usan para encabezados, formularios y navegación?
 
-## Tareas:
+- **Encabezados:** `<h1>` a `<h6>`, siendo `<h1>` el más importante y `<h6>` el menos importante.
+- **Formularios:** `<form>`, `<input>`, `<label>`, `<textarea>`, `<select>`, `<option>`, `<button>`, `<fieldset>`, `<legend>`. Estas etiquetas permiten recolectar datos del usuario.
+- **Navegación:** `<nav>` para la sección de navegación, y `<a>` para enlaces internos o externos.
 
-* Crear el archivo index.html con estructura base.
+### ¿Cómo se hace que una página sea responsive?
 
-```
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Mi primera pagina web</title>
-</head>
-<body>
-    <h1>Hola Mundo!</h1>
-    <p>Este es un parrafo de ejemplo.</p>
-</body>
-</html>
-```
+1. Usar una meta etiqueta viewport:  
+   ```html
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   ```
+2. Aplicar estilos flexibles con CSS (porcentaje, flexbox, grid, etc.).
 
-* Crear style.css y probar estilos simples.
+3. Usar media queries para adaptar el diseño a distintos tamaños de pantalla.
 
-El encabezado <h1> color rojo y el parrafo <p> color azul.
+4. Probar el diseño en dispositivos móviles y escritorio.
 
-```
-<style>
+## ✅ Tareas realizadas.
+
+1. Crear index.html con estructura básica.
+    ```html
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mi primera página web</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <h1>Hola Mundo!</h1>
+        <p>Este es un párrafo de ejemplo.</p>
+    </body>
+    </html>
+    ```
+
+2. Crear style.css y probar estilos simples.
+    ```css
     h1 {
         color: red;
     }
@@ -47,15 +56,19 @@ El encabezado <h1> color rojo y el parrafo <p> color azul.
     p {
         color: blue;
     }
-</style>
-```
+    ```
 
-* Añadir un formulario básico para agendar una cita (nombre, fecha, hora).
+3. Añadir formulario básico de reservas.
+    ```html
+    <h1>Reservation Form</h1>
+    <form>
+        <label for="fname">Full name:</label>
+        <input type="text" id="fname" name="fname"><br><br>
 
-```
-<h1>Reservation Form</h1>
-<label for="fname">Full name:</label>
-<input type="text" id="fname" name="fname"><br><br>
-<label for="dtime">Datetime:</label>
-<input type="datetime-local" id="dtime" name="dtime"><br><br>
-```
+        <label for="dtime">Datetime:</label>
+        <input type="datetime-local" id="dtime" name="dtime"><br><br>
+
+        <button type="submit">Reserve</button>
+    </form>
+    ```
+
