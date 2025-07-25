@@ -1,37 +1,32 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Formulario de Reservas</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <title>Reservation System</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="app.js"></script>
 </head>
 <body>
     <nav>
-        <ul>
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Reserve</a></li>
-            <li><a href="#">Contact</a></li>
-        </ul>
+        <a href="/">Home</a>
+        <a href="/admin.html">Admin</a>
     </nav>
 
-    <main class="container">
-        <h1>Reservation Form</h1>
-        <form action="/reserve" method="POST">
+    <div class="container">
+        <h1>Make a Reservation</h1>
+        <form>
             <label for="fname">Full name:</label>
-            <input type="text" id="fname" name="fname" required /><br /><br />
+            <input type="text" id="fname" name="fname" required>
 
-            <label for="dtime">Datetime:</label>
-            <input type="datetime-local" id="dtime" name="dtime" required /><br /><br />
+            <label for="dtime">Date and time:</label>
+            <input type="datetime-local" id="dtime" name="dtime" required>
 
             <button type="submit">Reserve</button>
         </form>
-    </main>
+    </div>
 
     <footer>
-        <p>&copy; 2025 All rights reserved</p>
+        <p>&copy; 2025 Reservation System</p>
     </footer>
-
-    <script src="app.js"></script>
 </body>
 </html>

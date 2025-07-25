@@ -1,4 +1,4 @@
-# 🗓️ 24 de julio del 2025.
+# 1 🗓️ 24 de julio del 2025.
 
 ## 🎯 Objetivo:
 Aprender a estructurar contenido con HTML y aplicar estilos básicos con CSS en una página web.
@@ -76,7 +76,7 @@ Su propósito es **definir la estructura y el contenido** de una página, organi
     </form>
     ```
 
-# 🗓️ 25 de julio del 2025.
+# 2 🗓️ 25 de julio del 2025.
 
 ## 🎯 Objetivo:
 Adaptar la interfaz para diferentes tamaños de pantalla.
@@ -111,7 +111,7 @@ El footer se añadió al final del <body>, dentro de una etiqueta <footer>.
 
 Contiene un mensaje simple de derechos reservados y se estilizó para quedar centrado y con fondo gris claro.
 
-# 🗓️ 25 de julio del 2025.
+# 3 🗓️ 25 de julio del 2025.
 
 ## 🎯 Objetivo:
 Agregar interactividad básica al formulario usando JavaScript. Validar que los datos no estén vacíos y que la fecha/hora sea válida.
@@ -151,7 +151,7 @@ Una vez creado el archivo app.js agregue <script src="app.js"></script> a mi htm
 2. Validar nombre y fecha.
 Agregamos la captura de un evento del formulario al mandar la reservacion se pregunta si el nombre no esta vacio y si la fecha no este vacia y que la fecha sea actual.
 
-# 🗓️ 25 de julio del 2025.
+# 4 🗓️ 25 de julio del 2025.
 
 ## 🎯 Objetivo:
 Crear un servidor básico con Node.js y Express para procesar el formulario de reservas y preparar conexión con una base de datos (ej: SQLite o MongoDB más adelante).
@@ -189,7 +189,7 @@ Actualizamos el directorio de los archivos para darle una forma mas formal a mi 
 5. Modificar el HTML.
 En el formulario HTML añadi <form action="/reserve" method="POST">
 
-# 🗓️ 25 de julio del 2025.
+# 5 🗓️ 25 de julio del 2025.
 
 ## 🎯 Objetivo:
 Guardar las reservas realizadas en una base de datos real para que no se pierdan al reiniciar el servidor.
@@ -222,3 +222,120 @@ Este archivo manejará la conexión y las operaciones de base de datos.
 
 3. Conectar server.js con la base de datos
 Modificamos el archivo server.js para usar db.js.
+
+# 6 🗓️ 25 de julio del 2025.
+
+## 🎯 Objetivo:
+Crear una página tipo panel administrativo donde puedas ver todas las reservas guardadas en la base de datos.
+
+---
+
+## ❓ Preguntas clave.
+
+### ¿Cómo puedo obtener los datos almacenados en SQLite desde el navegador?
+Usando una API en Node.js que consulte SQLite y devuelva JSON.
+
+### ¿Cómo muestro los datos en una tabla HTML de forma dinámica?
+Con JS, recorres el JSON y creas filas dinámicamente en la tabla.
+
+### ¿Cómo conecto el servidor (Node.js) con el frontend (HTML + JS)?
+Con fetch() en JS consumes la API del servidor Node.js.
+
+### ¿Qué pasa si no hay reservas aún? ¿Se puede manejar sin errores?
+Sí, verifica si el array está vacío y muestra un mensaje.
+
+## ✅ Tareas realizadas.
+
+1. Crear admin.html:
+Se hizo una nueva página dentro del directorio public/ para el panel administrativo, con estructura HTML y diseño consistente.
+
+2. Agregar tabla HTML:
+Se creó una tabla con encabezados (ID, Full Name, Date and Time) para mostrar los registros.
+
+3. Programar script en admin.html:
+Se hizo una petición fetch a la API /api/reservations para recuperar los datos desde el backend y mostrarlos en la tabla de forma automática.
+
+4. Agregar nueva ruta en el servidor:
+Se implementó una ruta GET /api/reservations en server.js que consulta todos los registros de la base de datos y los devuelve en formato JSON.
+
+5. Conectar backend y frontend:
+Se integró la respuesta JSON con el DOM para mostrar cada reserva como una fila en la tabla HTML.
+
+6. Estilizar la tabla en style.css:
+Se añadió diseño visual para las tablas: colores, bordes, espaciado, encabezados azules y filas alternadas.
+
+7. Verificación funcional completa:
+Se verificó que al agregar reservas en el formulario (index.html), estas aparecen automáticamente en el panel (admin.html) sin recargar el servidor.
+
+# 6 🗓️ 25 de julio del 2025.
+
+## 🎯 Objetivo:
+Permitir que un administrador elimine reservas directamente desde la interfaz.
+
+---
+
+## ❓ Preguntas clave.
+
+### ¿Cómo envío una solicitud para eliminar un registro específico?
+Se utiliza fetch() con el método HTTP DELETE, enviando como parámetro el id del registro. Ejemplo:
+    ```JS
+    fetch(`/api/reservations/${id}`, {
+    method: "DELETE"
+    })
+    .then(res => res.json())
+    .then(data => {
+    if (data.success) {
+        // Eliminar fila del DOM, etc.
+    }
+    });
+    ```
+
+### ¿Qué método HTTP se usa para eliminar datos?
+El método DELETE es el que se usa para indicarle al servidor que debe borrar un recurso identificado (por ejemplo, una reserva con cierto id).
+
+### ¿Cómo actualizo la tabla automáticamente tras eliminar una fila?
+Después de recibir la confirmación de que la reserva fue eliminada con éxito desde el servidor, usamos JavaScript para eliminar la fila del DOM. Ejemplo:
+    ```JS
+    row.remove(); // Donde 'row' es la fila correspondiente al botón presionado
+    ```
+
+### ¿Cómo evito eliminaciones accidentales?
+Antes de enviar la solicitud de eliminación, se muestra un mensaje de confirmación al usuario usando confirm():
+    ```JS
+    if (confirm("Are you sure you want to delete this reservation?")) {
+        // Proceder con eliminación
+    }
+    ```
+
+## ✅ Tareas realizadas.
+
+1. Agregar botón "Delete" a cada fila:
+En admin.html, se actualizó el código JS que genera las filas para añadir una nueva celda con un botón de eliminar.
+
+2. Programar evento click en cada botón:
+Al presionar "Delete", se muestra una confirmación (confirm("Are you sure?")) y si el usuario acepta, se envía una solicitud DELETE al servidor.
+
+3. Implementar ruta DELETE en server.js:
+Se agregó una nueva ruta:
+    ```JS
+    app.delete("/api/reservations/:id", (req, res) => {
+        const id = req.params.id;  // Obtener id de la URL
+        db.run("DELETE FROM reservations WHERE id = ?", id, function(err) {
+            if (err) {
+                console.error("Error deleting reservation:", err.message);
+                return res.status(500).json({ error: "Failed to delete reservation" });
+            }
+
+            if (this.changes === 0) {
+                return res.status(404).json({ error: "Reservation not found" });
+            }
+            res.json({ success: true });
+        });
+    });
+    ```
+
+4. Actualizar frontend tras eliminar:
+Después de una eliminación exitosa, se remueve la fila correspondiente del DOM sin necesidad de recargar toda la tabla.
+
+5. Estilo visual para botón:
+El botón se estilizó con CSS (.delete-btn) para hacerlo rojo y visualmente claro como una acción peligrosa.

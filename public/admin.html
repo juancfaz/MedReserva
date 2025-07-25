@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel - Reservations</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/admin.html">Admin</a>
+    </nav>
+
+    <div class="container">
+        <h1>Reservation Panel</h1>
+        <table id="reservationTable">
+        <thead>
+            <tr>
+            <th>ID</th>
+            <th>Full Name</th>
+            <th>Date and Time</th>
+            <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Aquí se cargarán las filas dinámicamente -->
+        </tbody>
+        </table>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Reservation System</p>
+    </footer>
+
+    <script>
+    fetch("/api/reservations")
+        .then(res => res.json())
+        .then(data => {
+        const tableBody = document.querySelector("#reservationTable tbody");
+
+        data.forEach(reservation => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+            <td>${reservation.id}</td>
+            <td>${reservation.name}</td>
+            <td>${reservation.date}</td>
+            <td>
+                <button class="delete-btn" data-id="${reservation.id}">Delete</button>
+            </td>
+            `;
+
+            tableBody.appendChild(row);
+        });
+        });
+        
+    document.addEventListener("click", function (e) {
+        if (e.target && e.target.classList.contains("delete-btn")) {
+        const id = e.target.dataset.id;
+
+        const confirmDelete = confirm("Are you sure you want to delete this reservation?");
+        if (!confirmDelete) return;
+
+        // Ahora vamos a enviar la petición al servidor para borrar la reserva
+        fetch(`/api/reservations/${id}`, {
+            method: "DELETE",
+        })
+        .then(res => {
+            if (res.ok) {
+            // Eliminar la fila de la tabla visualmente
+            e.target.closest("tr").remove();
+            alert("Reservation deleted successfully.");
+            } else {
+            alert("Failed to delete the reservation.");
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error deleting reservation.");
+        });
+        }
+    });
+    </script>
+</body>
+</html>

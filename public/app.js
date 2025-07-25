@@ -5,12 +5,12 @@ document.querySelector("form").addEventListener("submit", function (e) {
     const date = document.getElementById("dtime").value;
 
     if (name === "") {
-        alert("Please write your full name");
+        alert("Please enter your full name.");
         return;
     }
 
     if (date === "") {
-        alert("Please select a date and time");
+        alert("Please select a date and time.");
         return;
     }
 
@@ -18,12 +18,22 @@ document.querySelector("form").addEventListener("submit", function (e) {
     const selected = new Date(date);
 
     if (selected <= now) {
-        alert("The date must be after the current time");
+        alert("The date must be in the future.");
         return;
     }
 
-    // Si todo está bien, enviar el formulario
-    this.submit();
-
-    alert("Booking successful!");
+    fetch("/reserve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, date })
+    })
+    .then(res => res.text())
+    .then(msg => {
+        alert(msg);
+        document.querySelector("form").reset();
+    })
+    .catch(err => {
+        alert("Error sending reservation.");
+        console.error(err);
+    });
 });
