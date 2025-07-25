@@ -112,3 +112,43 @@ Se usó Flexbox para alinearlos horizontalmente con display: flex, justify-conte
 El footer se añadió al final del <body>, dentro de una etiqueta <footer>. 
 
 Contiene un mensaje simple de derechos reservados y se estilizó para quedar centrado y con fondo gris claro.
+
+# 🗓️ 25 de julio del 2025.
+
+## 🎯 Objetivo: 
+Agregar interactividad básica al formulario usando JavaScript. Validar que los datos no estén vacíos y que la fecha/hora sea válida.
+
+---
+
+## ❓ Preguntas clave.
+
+### ¿Qué es el DOM?
+Es como si tomaramos el HTML y lo trasformaramos a un archivo de JavaScript. Te permite acceder y modificar el contenido, estructura y estilo de la pagina.
+
+Ejemplo:
+    ```JS
+    document.getElementById("fname") te da acceso al input de nombre.
+    ```
+    
+### ¿Cómo se capturan eventos del formulario?
+Con codigo JavaScript podemos decirle al navegador que ejecute una funcion cuando se interactue con el HTML.
+
+Ejemplo:
+    ```JS
+    form.addEventListener("submit", function(e) {
+        e.preventDefault(); // evita que el formulario se envíe automáticamente
+    });
+    ```
+
+### ¿Cómo se hace validación en el cliente?
+La validacion se hace con un condicional if y verifica los datos antes de enviarlos al servidor.
+
+Ejemplo: verificar que el campo de nombre no esté vacío.
+
+## ✅ Tareas realizadas.
+
+1. Crear el archivo app.js y enlazarlo.
+Una vez creado el archivo app.js agregue <script src="app.js"></script> a mi html entre <body>... </body> para enlazarlo.
+
+2. Validar nombre y fecha.
+Agregamos la captura de un evento del formulario al mandar la reservacion se pregunta si el nombre no esta vacio y si la fecha no este vacia y que la fecha sea actual.
