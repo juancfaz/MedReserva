@@ -84,9 +84,12 @@ app.post("/reserve", requireLogin, (req, res) => {
     });
 });
 
+const isAdmin = require('./middleware/isAdmin');
+const isAuthenticated = require('./middleware/isAuthenticated');
+
 // Obtener reservas (solo usuarios logueados)
 // Usuarios normales solo ven sus reservas, admins ven todas
-app.get("/api/reservations", requireLogin, (req, res) => {
+app.get("/api/reservations", isAuthenticated, isAdmin, (req, res) => {
     if (req.session.user.role === "admin") {
         // Admin ve todas las reservas
         db.all("SELECT * FROM reservations ORDER BY date ASC", [], (err, rows) => {

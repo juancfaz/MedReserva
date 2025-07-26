@@ -456,3 +456,7 @@ Para que el servidor recuerde quién inició sesión y que el usuario no tenga q
 
 4. Proteger rutas para que solo usuarios autenticados puedan acceder.
 Modificar las rutas del servidor para que solo usuarios con sesión activa puedan acceder a las funciones de ver reservas y crear nuevas reservas.
+
+5. Middleware de autorización por rol.
+Crear un middleware isAdmin para validar si el usuario logueado tiene rol "admin".
+Aplicar isAdmin a rutas protegidas, como ver todas las reservas (GET /api/reservations).
