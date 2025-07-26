@@ -1,18 +1,10 @@
 const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
-
 const app = express();
-const db = new sqlite3.Database("./reservations.db");
+const db = require("./db");
 
 app.use(express.static("public"));
 app.use(express.json());
-
-db.run(`CREATE TABLE IF NOT EXISTS reservations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    date TEXT NOT NULL
-)`);
 
 app.post("/reserve", (req, res) => {
     const { name, date } = req.body;

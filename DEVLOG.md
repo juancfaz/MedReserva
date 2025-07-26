@@ -419,3 +419,31 @@ Se añadió lógica para validar los datos ingresados en el formulario (longitud
 
 5. Cierre del modal y actualización dinámica de la tabla:
 Al guardar exitosamente, el modal se cierra y los datos en la tabla de reservas se actualizan en tiempo real sin necesidad de recargar la página, mejorando la interacción del usuario.
+
+# 10 🗓️ 26 de julio del 2025.
+
+## 🎯 Objetivo:
+Agregar un sistema de autenticación básica que permita a usuarios y administradores iniciar sesión de forma segura, diferenciando sus permisos.
+
+---
+
+## ❓ Preguntas clave.
+
+### ¿Qué es la autenticación?
+Es el proceso de verificar si un usuario es quien dice ser, generalmente mediante usuario (correo o nombre) y contraseña.
+
+### ¿Cuál es la diferencia entre autenticación y autorización?
+Autenticación: identificar quién eres (login).
+
+Autorización: qué puedes hacer dentro del sistema (permisos según rol: admin/usuario).
+
+### ¿Cómo se guarda la sesión de un usuario?
+Generalmente se guarda en una cookie o token, que se envía en cada petición para saber quién es el usuario activo.
+
+### ¿Por qué separar usuarios y administradores?
+Porque los usuarios normales solo deben ver o editar sus propias reservas, mientras los admins pueden gestionar todo el sistema.
+
+## ✅ Tareas realizadas.
+
+1. Crear la tabla de usuarios en la base de datos.
+Abrimos el archivo db.js, agregamos la tabla usuarios e insertamos dos usuarios de prueba.
