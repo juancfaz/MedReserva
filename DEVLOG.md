@@ -452,3 +452,7 @@ Abrimos el archivo db.js, agregamos la tabla usuarios e insertamos dos usuarios 
 Vamos a permitir que los usuarios (clientes o admins) inicien sesión con su correo y contraseña. Aún no implementaremos sesiones o tokens.
 
 3. Manejo básico de sesión con cookies en Express.
+Para que el servidor recuerde quién inició sesión y que el usuario no tenga que enviar su correo y contraseña en cada petición, usaremos cookies de sesión.
+
+4. Proteger rutas para que solo usuarios autenticados puedan acceder.
+Modificar las rutas del servidor para que solo usuarios con sesión activa puedan acceder a las funciones de ver reservas y crear nuevas reservas.
