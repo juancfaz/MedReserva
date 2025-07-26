@@ -468,11 +468,54 @@ Se quitó el uso de express-session, las cookies, y la carpeta middleware con lo
 # 11 🗓️ 26 de julio del 2025.
 
 ## 🎯 Objetivo:
-Integrar el sistema de autenticación con JWT en el frontend, permitiendo a los usuarios iniciar sesión desde la interfaz web y gestionar el token de forma segura.
+Integrar el sistema de autenticación con JWT en el frontend, permitiendo a los usuarios iniciar sesión desde la interfaz web y gestionar el token de forma segura. Además, implementar control de acceso en la interfaz y en el backend para diferenciar roles de usuario y administrador, y permitir la gestión segura de reservaciones.
 
 ---
 
 ## ❓ Preguntas clave.
 
+¿Cómo se maneja el token JWT en el frontend para mantener la sesión activa?
+
+¿Cómo se ocultan o muestran elementos del menú (como el enlace al panel admin) según el rol del usuario?
+
+¿Cómo se protege el acceso a las rutas y recursos en el backend para que sólo usuarios autorizados puedan realizar ciertas acciones?
+
+¿Cómo se asegura la validación de datos tanto en frontend como en backend para evitar errores y datos inválidos?
+
+¿Qué sucede si el token es inválido o ha expirado? ¿Cómo se maneja la sesión en ese caso?
+
+¿Se pueden hacer reservaciones tanto usuarios normales como administradores?
+
+¿Cómo se implementa la gestión (edición, eliminación) de reservaciones sólo para administradores?
+
+¿Qué medidas de usabilidad se tomaron para mostrar mensajes y modales según el estado del usuario?
 
 ## ✅ Tareas realizadas.
+
+1. Implementación de un sistema de login con JWT en el backend, generando un token con la información del usuario y su rol.
+
+2. Creación de un formulario de inicio de sesión en el frontend con manejo asíncrono para autenticación.
+
+3. Almacenamiento seguro del token JWT en localStorage y uso en cabeceras Authorization para llamadas a la API.
+
+4. Desarrollo de la función showUserInfo para mostrar/ocultar elementos del menú según la sesión y el rol del usuario.
+
+5. Protección de rutas y recursos del backend mediante middleware que valida el token y verifica roles de usuario o administrador.
+
+6. Implementación del CRUD de reservaciones con permisos adecuados:
+
+7. Usuarios autenticados pueden crear reservaciones.
+
+8. Solo administradores pueden ver, editar y eliminar reservaciones.
+
+9. En el frontend, control dinámico para ocultar el enlace a la página admin si el usuario no es administrador.
+
+10. Creación de la página admin con carga dinámica de reservaciones, búsqueda, edición y eliminación con autorización JWT.
+
+11. Validaciones en frontend para formularios de reserva y edición (campos obligatorios, fecha futura).
+
+12. Manejo adecuado de sesiones expiradas o tokens inválidos limpiando el almacenamiento local y mostrando botones de login.
+
+13. Alertas y mensajes claros para informar al usuario sobre errores, estados de sesión y acciones exitosas.
+
+14. Separación lógica entre usuario normal y administrador para garantizar seguridad y usabilidad.
