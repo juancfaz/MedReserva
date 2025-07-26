@@ -267,7 +267,7 @@ Se añadió diseño visual para las tablas: colores, bordes, espaciado, encabeza
 7. Verificación funcional completa:
 Se verificó que al agregar reservas en el formulario (index.html), estas aparecen automáticamente en el panel (admin.html) sin recargar el servidor.
 
-# 6 🗓️ 25 de julio del 2025.
+# 7 🗓️ 25 de julio del 2025.
 
 ## 🎯 Objetivo:
 Permitir que un administrador elimine reservas directamente desde la interfaz.
@@ -339,3 +339,47 @@ Después de una eliminación exitosa, se remueve la fila correspondiente del DOM
 
 5. Estilo visual para botón:
 El botón se estilizó con CSS (.delete-btn) para hacerlo rojo y visualmente claro como una acción peligrosa.
+
+# 8 🗓️ 25 de julio del 2025.
+
+## 🎯 Objetivo:
+Permitir que el administrador pueda buscar reservas o editar la información de una reserva existente.
+
+---
+
+## ❓ Preguntas clave.
+
+### ¿Cómo se puede buscar una reserva en una tabla HTML?
+Hay varias formas, pero la más sencilla es usar JavaScript para filtrar filas de una tabla en base a lo que el usuario escriba en un campo de búsqueda (input). Por ejemplo: buscar por nombre.
+
+### ¿Cómo se edita una fila en una tabla HTML?
+Hay dos métodos comunes:
+
+Hacer que los campos de la fila se vuelvan editables directamente (inline editing).
+
+O bien, al hacer clic en "Editar", mostrar un formulario modal o emergente para modificar los datos y luego actualizar la tabla y la base de datos.
+
+### ¿Cómo se actualizan los datos en el servidor?
+Se usa una petición PUT o PATCH con fetch() o axios para enviar los datos modificados al servidor.
+
+El servidor actualiza la base de datos (por ejemplo, MongoDB), y devuelve una respuesta indicando si fue exitoso.
+
+
+## ✅ Tareas realizadas.
+
+### Implementar búsqueda en la tabla de reservas.
+1. Añadir un campo <input> sobre la tabla para escribir el nombre a buscar.
+
+2. Escribir una función JavaScript que escuche cuando el usuario escriba y filtre las filas de la tabla según lo que escriba.
+
+### Habilitar edición de reservas.
+1. Agregar un botón “Edit” junto al botón “Delete” en cada fila.
+
+2. Al hacer clic en “Edit”, mostrar un formulario para modificar los datos de esa fila (puede ser un formulario emergente o que se auto-rellene arriba).
+
+3. Cuando el usuario guarde los cambios, se debe:
+    - **Validar los datos.**
+
+    - **Enviar una petición PUT al backend para actualizar la reserva.**
+
+    - **Refrescar la tabla para mostrar los nuevos datos.**

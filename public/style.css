@@ -90,3 +90,18 @@ tr:nth-child(even) {
 .delete-btn:hover {
     background-color: #b02a37; /* rojo más oscuro al pasar el mouse */
 }
+
+.edit-btn {
+    background-color: #28a745; /* green bootstrap */
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.edit-btn:hover {
+    background-color: #28a745; /* rojo más oscuro al pasar el mouse */
+}

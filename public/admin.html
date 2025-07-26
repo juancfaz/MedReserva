@@ -13,18 +13,20 @@
 
     <div class="container">
         <h1>Reservation Panel</h1>
+        <input type="text" id="searchInput" placeholder="Search by name..." />
+
         <table id="reservationTable">
-        <thead>
-            <tr>
-            <th>ID</th>
-            <th>Full Name</th>
-            <th>Date and Time</th>
-            <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Aquí se cargarán las filas dinámicamente -->
-        </tbody>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Full Name</th>
+                    <th>Date and Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Rows will be inserted here -->
+            </tbody>
         </table>
     </div>
 
@@ -33,53 +35,116 @@
     </footer>
 
     <script>
-    fetch("/api/reservations")
-        .then(res => res.json())
-        .then(data => {
-        const tableBody = document.querySelector("#reservationTable tbody");
+        fetch("/api/reservations")
+            .then(res => res.json())
+            .then(data => {
+                const tableBody = document.querySelector("#reservationTable tbody");
 
-        data.forEach(reservation => {
-            const row = document.createElement("tr");
+                data.forEach(reservation => {
+                    const row = document.createElement("tr");
 
-            row.innerHTML = `
-            <td>${reservation.id}</td>
-            <td>${reservation.name}</td>
-            <td>${reservation.date}</td>
-            <td>
-                <button class="delete-btn" data-id="${reservation.id}">Delete</button>
-            </td>
-            `;
+                    row.innerHTML = `
+                        <td>${reservation.id}</td>
+                        <td>${reservation.name}</td>
+                        <td>${reservation.date}</td>
+                        <td>
+                            <button class="edit-btn" data-id="${reservation.id}" data-name="${reservation.name}" data-date="${reservation.date}">Edit</button>
+                            <button class="delete-btn" data-id="${reservation.id}">Delete</button>
+                        </td>
+                    `;
 
-            tableBody.appendChild(row);
-        });
-        });
-        
-    document.addEventListener("click", function (e) {
-        if (e.target && e.target.classList.contains("delete-btn")) {
-        const id = e.target.dataset.id;
+                    tableBody.appendChild(row);
+                });
+            });
 
-        const confirmDelete = confirm("Are you sure you want to delete this reservation?");
-        if (!confirmDelete) return;
+        document.addEventListener("click", function (e) {
+            if (e.target && e.target.classList.contains("delete-btn")) {
+                const id = e.target.dataset.id;
+                const confirmDelete = confirm("Are you sure you want to delete this reservation?");
+                if (!confirmDelete) return;
 
-        // Ahora vamos a enviar la petición al servidor para borrar la reserva
-        fetch(`/api/reservations/${id}`, {
-            method: "DELETE",
-        })
-        .then(res => {
-            if (res.ok) {
-            // Eliminar la fila de la tabla visualmente
-            e.target.closest("tr").remove();
-            alert("Reservation deleted successfully.");
-            } else {
-            alert("Failed to delete the reservation.");
+                fetch(`/api/reservations/${id}`, {
+                    method: "DELETE",
+                })
+                .then(res => {
+                    if (res.ok) {
+                        e.target.closest("tr").remove();
+                        alert("Reservation deleted successfully.");
+                    } else {
+                        alert("Failed to delete the reservation.");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error deleting reservation.");
+                });
             }
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Error deleting reservation.");
         });
-        }
-    });
+
+        document.getElementById("searchInput").addEventListener("keyup", function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll("#reservationTable tbody tr");
+
+            rows.forEach(row => {
+                const nameCell = row.querySelectorAll("td")[1]; // ← columna del nombre
+                if (nameCell) {
+                    const name = nameCell.textContent.toLowerCase();
+                    row.style.display = name.includes(filter) ? "" : "none";
+                }
+            });
+        });
+
+        document.addEventListener("click", function (e) {
+            if (e.target && e.target.classList.contains("edit-btn")) {
+                const id = e.target.dataset.id;
+                const currentName = e.target.dataset.name;
+                const currentDate = e.target.dataset.date;
+
+                const newName = prompt("Edit name:", currentName);
+                if (!newName || newName.trim().length < 3 || newName.trim().length > 50) {
+                    alert("Name must be at least 3 characters or no more than 50 characters.");
+                    return;
+                }
+
+                const newDate = prompt("Edit date (YYYY-MM-DDTHH:mm):", currentDate);
+                if (!newDate || isNaN(Date.parse(newDate))) {
+                    alert("Please enter a valid date in the format YYYY-MM-DDTHH:mm.");
+                    return;
+                }
+
+                const selectedDate = new Date(newDate);
+                const now = new Date();
+                if (selectedDate <= now) {
+                    alert("Date must be in the future.");
+                    return;
+                }
+
+                // Si pasa validaciones, hacer el fetch para actualizar
+                fetch(`/api/reservations/${id}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ name: newName.trim(), date: newDate }),
+                })
+                .then(res => {
+                    if (res.ok) {
+                        const row = e.target.closest("tr");
+                        row.children[1].textContent = newName.trim();
+                        row.children[2].textContent = newDate;
+                        e.target.dataset.name = newName.trim();
+                        e.target.dataset.date = newDate;
+                        alert("Reservation updated successfully.");
+                    } else {
+                        alert("Failed to update reservation.");
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Error updating reservation.");
+                });
+            }
+        });
     </script>
 </body>
 </html>

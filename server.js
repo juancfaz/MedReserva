@@ -58,6 +58,31 @@ app.delete("/api/reservations/:id", (req, res) => {
     });
 });
 
+app.put("/api/reservations/:id", (req, res) => {
+    const id = req.params.id;
+    const { name, date } = req.body;
+
+    if (!name || !date) {
+        return res.status(400).json({ error: "Name and date are required." });
+    }
+
+    const sql = "UPDATE reservations SET name = ?, date = ? WHERE id = ?";
+    const params = [name, date, id];
+
+    db.run(sql, params, function(err) {
+        if (err) {
+            console.error("Error updating reservation:", err.message);
+            return res.status(500).json({ error: "Failed to update reservation" });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ error: "Reservation not found" });
+        }
+
+        res.json({ message: "Reservation updated successfully." });
+    });
+});
+
 
 const PORT = 3000;
 app.listen(PORT, () => {
