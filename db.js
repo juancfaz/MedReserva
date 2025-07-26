@@ -12,7 +12,7 @@ db.serialize(() => {
         )
     `);
 
-    // ✅ Tabla de usuarios
+    // Tabla de usuarios
     db.run(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -23,19 +23,16 @@ db.serialize(() => {
         )
     `);
 
-    // ✅ Insertar usuarios de prueba si no hay ninguno
+    // Insertar usuarios de prueba si no hay ninguno
     db.get(`SELECT COUNT(*) as count FROM users`, (err, row) => {
         if (err) {
             console.error("Error al contar usuarios:", err.message);
             return;
         }
-
         if (row.count === 0) {
             const insert = db.prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-
             insert.run("Admin Juan", "admin@example.com", "admin123", "admin");
-            insert.run("Cliente Ana", "ana@example.com", "usuario123", "user");
-
+            insert.run("Cliente usuario", "usuario@example.com", "usuario123", "user");
             insert.finalize();
             console.log("Usuarios de prueba insertados.");
         }

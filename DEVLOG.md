@@ -423,7 +423,7 @@ Al guardar exitosamente, el modal se cierra y los datos en la tabla de reservas 
 # 10 🗓️ 26 de julio del 2025.
 
 ## 🎯 Objetivo:
-Agregar un sistema de autenticación básica que permita a usuarios y administradores iniciar sesión de forma segura, diferenciando sus permisos.
+Agregar un sistema de autenticación moderna mediante JWT, que permita a usuarios y administradores iniciar sesión de forma segura, diferenciando sus permisos.
 
 ---
 
@@ -433,30 +433,46 @@ Agregar un sistema de autenticación básica que permita a usuarios y administra
 Es el proceso de verificar si un usuario es quien dice ser, generalmente mediante usuario (correo o nombre) y contraseña.
 
 ### ¿Cuál es la diferencia entre autenticación y autorización?
-Autenticación: identificar quién eres (login).
+Autenticación: Identificar quién eres (ej. iniciar sesión).
 
-Autorización: qué puedes hacer dentro del sistema (permisos según rol: admin/usuario).
+### Autorización: Determinar qué permisos tienes dentro del sistema (ej. admin puede ver todas las reservas, cliente solo crear una).
 
 ### ¿Cómo se guarda la sesión de un usuario?
-Generalmente se guarda en una cookie o token, que se envía en cada petición para saber quién es el usuario activo.
+Con JWT (JSON Web Token). Al iniciar sesión, el servidor entrega un token que el cliente guarda (por ejemplo, en localStorage o en un header). Este token se envía en cada petición protegida como prueba de identidad.
 
 ### ¿Por qué separar usuarios y administradores?
-Porque los usuarios normales solo deben ver o editar sus propias reservas, mientras los admins pueden gestionar todo el sistema.
+Porque:
+
+Usuarios normales solo deben crear reservas.
+
+Admins pueden ver, modificar y eliminar todas las reservas.
 
 ## ✅ Tareas realizadas.
 
 1. Crear la tabla de usuarios en la base de datos.
-Abrimos el archivo db.js, agregamos la tabla usuarios e insertamos dos usuarios de prueba.
+Abrimos el archivo db.js, agregamos la tabla usuarios e insertamos dos usuarios de prueba (uno con rol admin, otro con rol user).
 
-2. Backend de Login (Autenticación básica).
-Vamos a permitir que los usuarios (clientes o admins) inicien sesión con su correo y contraseña. Aún no implementaremos sesiones o tokens.
+2. Implementar login con autenticación mediante JWT.
+Creamos una ruta POST /login que valida el correo y contraseña.
+Si es correcto, se genera un JWT con los datos del usuario y se envía en la respuesta.
 
-3. Manejo básico de sesión con cookies en Express.
-Para que el servidor recuerde quién inició sesión y que el usuario no tenga que enviar su correo y contraseña en cada petición, usaremos cookies de sesión.
+3. Agregar middleware para validar token JWT.
+Creamos una función authenticateToken que verifica el token enviado en el header Authorization. Si es válido, extrae los datos del usuario y los guarda en req.user.
 
-4. Proteger rutas para que solo usuarios autenticados puedan acceder.
-Modificar las rutas del servidor para que solo usuarios con sesión activa puedan acceder a las funciones de ver reservas y crear nuevas reservas.
+4. Agregar control de acceso según rol directamente en la ruta.
+Se validan los permisos dentro de las rutas protegidas. Por ejemplo, para ver todas las reservas (GET /api/reservations), se revisa si req.user.role === 'admin'.
 
-5. Middleware de autorización por rol.
-Crear un middleware isAdmin para validar si el usuario logueado tiene rol "admin".
-Aplicar isAdmin a rutas protegidas, como ver todas las reservas (GET /api/reservations).
+5. Eliminar sistema anterior de sesiones y cookies.
+Se quitó el uso de express-session, las cookies, y la carpeta middleware con los archivos isAdmin.js y isAuthenticate.js, ya que el manejo de sesión ahora es completamente tokenizado.
+
+# 11 🗓️ 26 de julio del 2025.
+
+## 🎯 Objetivo:
+Integrar el sistema de autenticación con JWT en el frontend, permitiendo a los usuarios iniciar sesión desde la interfaz web y gestionar el token de forma segura.
+
+---
+
+## ❓ Preguntas clave.
+
+
+## ✅ Tareas realizadas.

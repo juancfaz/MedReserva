@@ -1,31 +1,14 @@
 const express = require("express");
-const path = require("path");
-const session = require("express-session");
-const app = express();
+const jwt = require("jsonwebtoken");
 const db = require("./db");
 
+const app = express();
 app.use(express.static("public"));
 app.use(express.json());
 
-// Configurar express-session
-app.use(session({
-    secret: "mi_secreto_super_seguro_123", // Cambia esto por un secreto seguro
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        maxAge: 1000 * 60 * 60 * 24 // 1 día
-    }
-}));
+const JWT_SECRET = "tu_clave_secreta_super_segura";
 
-// Middleware para verificar sesión activa
-function requireLogin(req, res, next) {
-    if (!req.session.user) {
-        return res.status(401).json({ error: "Unauthorized, please login" });
-    }
-    next();
-}
-
-// Endpoint para login
+// Ruta login - recibe email y password, devuelve token JWT si correcto
 app.post("/login", (req, res) => {
     const { email, password } = req.body;
 
@@ -33,109 +16,82 @@ app.post("/login", (req, res) => {
         return res.status(400).json({ error: "Email and password required" });
     }
 
-    db.get("SELECT * FROM users WHERE email = ? AND password = ?", [email, password], (err, user) => {
+    db.get("SELECT * FROM users WHERE email = ?", [email], (err, user) => {
         if (err) {
             console.error(err);
-            return res.status(500).json({ error: "Server error" });
+            return res.status(500).json({ error: "Database error" });
         }
 
-        if (!user) {
+        if (!user || user.password !== password) {
             return res.status(401).json({ error: "Invalid credentials" });
         }
 
-        // Guardar usuario en sesión
-        req.session.user = {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role
-        };
+        // Crear token JWT con datos de usuario
+        const token = jwt.sign(
+            { id: user.id, name: user.name, email: user.email, role: user.role },
+            JWT_SECRET,
+            { expiresIn: "1h" }
+        );
 
-        res.json({ message: "Login successful", user: req.session.user });
+        res.json({ message: "Login successful", token });
     });
 });
 
-// Endpoint para logout
-app.post("/logout", (req, res) => {
-    req.session.destroy(err => {
+// Middleware para verificar token JWT y guardar usuario en req.user
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) return res.status(401).json({ error: "Unauthorized, token missing" });
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: "Invalid token" });
+        req.user = user;
+        next();
+    });
+}
+
+// Obtener datos del usuario actual (con token)
+app.get("/api/me", authenticateToken, (req, res) => {
+    res.json(req.user);
+});
+
+// Obtener todas las reservas - solo admin
+app.get("/api/reservations", authenticateToken, (req, res) => {
+    if (req.user.role !== "admin") {
+        return res.status(403).json({ error: "Forbidden: Admins only" });
+    }
+
+    db.all("SELECT * FROM reservations ORDER BY date ASC", [], (err, rows) => {
         if (err) {
-            return res.status(500).json({ error: "Failed to logout" });
+            console.error(err);
+            return res.status(500).json({ error: "Error fetching reservations" });
         }
-        res.clearCookie("connect.sid");
-        res.json({ message: "Logged out successfully" });
+        res.json(rows);
     });
 });
 
-// Endpoint para crear reservas (solo usuarios logueados)
-app.post("/reserve", requireLogin, (req, res) => {
+// Crear nueva reserva - usuarios autenticados
+app.post("/reserve", authenticateToken, (req, res) => {
     const { name, date } = req.body;
 
     if (!name || !date) {
-        return res.status(400).send("Missing name or date.");
+        return res.status(400).json({ error: "Missing name or date" });
     }
 
     const stmt = db.prepare("INSERT INTO reservations (name, date) VALUES (?, ?)");
     stmt.run(name, date, function (err) {
         if (err) {
             console.error(err);
-            return res.status(500).send("Error saving reservation.");
+            return res.status(500).json({ error: "Error saving reservation" });
         }
-        res.send("Reservation successful!");
+        res.json({ message: "Reservation successful", id: this.lastID });
     });
 });
 
-const isAdmin = require('./middleware/isAdmin');
-const isAuthenticated = require('./middleware/isAuthenticated');
-
-// Obtener reservas (solo usuarios logueados)
-// Usuarios normales solo ven sus reservas, admins ven todas
-app.get("/api/reservations", isAuthenticated, isAdmin, (req, res) => {
-    if (req.session.user.role === "admin") {
-        // Admin ve todas las reservas
-        db.all("SELECT * FROM reservations ORDER BY date ASC", [], (err, rows) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).send("Error fetching reservations.");
-            }
-            res.json(rows);
-        });
-    } else {
-        // Usuario normal ve solo sus reservas (filtrando por nombre)
-        db.all("SELECT * FROM reservations WHERE name = ? ORDER BY date ASC", [req.session.user.name], (err, rows) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).send("Error fetching reservations.");
-            }
-            res.json(rows);
-        });
-    }
-});
-
-// Eliminar reserva (solo admins)
-app.delete("/api/reservations/:id", requireLogin, (req, res) => {
-    if (req.session.user.role !== "admin") {
-        return res.status(403).json({ error: "Forbidden: Admins only" });
-    }
-
-    const id = req.params.id;
-
-    db.run("DELETE FROM reservations WHERE id = ?", id, function(err) {
-        if (err) {
-            console.error("Error deleting reservation:", err.message);
-            return res.status(500).json({ error: "Failed to delete reservation" });
-        }
-
-        if (this.changes === 0) {
-            return res.status(404).json({ error: "Reservation not found" });
-        }
-
-        res.json({ success: true });
-    });
-});
-
-// Actualizar reserva (solo admins)
-app.put("/api/reservations/:id", requireLogin, (req, res) => {
-    if (req.session.user.role !== "admin") {
+// Actualizar reserva - solo admin
+app.put("/api/reservations/:id", authenticateToken, (req, res) => {
+    if (req.user.role !== "admin") {
         return res.status(403).json({ error: "Forbidden: Admins only" });
     }
 
@@ -149,7 +105,7 @@ app.put("/api/reservations/:id", requireLogin, (req, res) => {
     const sql = "UPDATE reservations SET name = ?, date = ? WHERE id = ?";
     const params = [name, date, id];
 
-    db.run(sql, params, function(err) {
+    db.run(sql, params, function (err) {
         if (err) {
             console.error("Error updating reservation:", err.message);
             return res.status(500).json({ error: "Failed to update reservation" });
@@ -160,6 +116,28 @@ app.put("/api/reservations/:id", requireLogin, (req, res) => {
         }
 
         res.json({ message: "Reservation updated successfully." });
+    });
+});
+
+// Eliminar reserva - solo admin
+app.delete("/api/reservations/:id", authenticateToken, (req, res) => {
+    if (req.user.role !== "admin") {
+        return res.status(403).json({ error: "Forbidden: Admins only" });
+    }
+
+    const id = req.params.id;
+
+    db.run("DELETE FROM reservations WHERE id = ?", id, function (err) {
+        if (err) {
+            console.error("Error deleting reservation:", err.message);
+            return res.status(500).json({ error: "Failed to delete reservation" });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ error: "Reservation not found" });
+        }
+
+        res.json({ success: true });
     });
 });
 
