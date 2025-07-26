@@ -34,6 +34,25 @@
         <p>&copy; 2025 Reservation System</p>
     </footer>
 
+    <!-- Modal de Edición -->
+    <div id="editModal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Edit Reservation</h2>
+        <form id="editForm">
+        <input type="hidden" id="editId">
+        <label for="editName">Full Name:</label>
+        <input type="text" id="editName" required>
+        <label for="editDate">Date and Time:</label>
+        <input type="datetime-local" id="editDate" required>
+        <div class="modal-buttons">
+            <button type="submit">Save</button>
+            <button type="button" id="cancelEdit">Cancel</button>
+        </div>
+        </form>
+    </div>
+    </div>
+
+
     <script>
         fetch("/api/reservations")
             .then(res => res.json())
@@ -95,56 +114,81 @@
         });
 
         document.addEventListener("click", function (e) {
-            if (e.target && e.target.classList.contains("edit-btn")) {
-                const id = e.target.dataset.id;
-                const currentName = e.target.dataset.name;
-                const currentDate = e.target.dataset.date;
+        if (e.target && e.target.classList.contains("edit-btn")) {
+            const id = e.target.dataset.id;
+            const name = e.target.dataset.name;
+            const date = e.target.dataset.date;
 
-                const newName = prompt("Edit name:", currentName);
-                if (!newName || newName.trim().length < 3 || newName.trim().length > 50) {
-                    alert("Name must be at least 3 characters or no more than 50 characters.");
-                    return;
-                }
+            document.getElementById("editId").value = id;
+            document.getElementById("editName").value = name;
+            document.getElementById("editDate").value = new Date(date).toISOString().slice(0,16);
 
-                const newDate = prompt("Edit date (YYYY-MM-DDTHH:mm):", currentDate);
-                if (!newDate || isNaN(Date.parse(newDate))) {
-                    alert("Please enter a valid date in the format YYYY-MM-DDTHH:mm.");
-                    return;
-                }
+            document.getElementById("editModal").classList.remove("hidden");
+        }
+        });
 
-                const selectedDate = new Date(newDate);
-                const now = new Date();
-                if (selectedDate <= now) {
-                    alert("Date must be in the future.");
-                    return;
-                }
+        document.getElementById("cancelEdit").addEventListener("click", () => {
+        document.getElementById("editModal").classList.add("hidden");
+        });
 
-                // Si pasa validaciones, hacer el fetch para actualizar
-                fetch(`/api/reservations/${id}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ name: newName.trim(), date: newDate }),
-                })
+        document.getElementById("editForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const id = document.getElementById("editId").value;
+            const newName = document.getElementById("editName").value.trim();
+            const newDate = document.getElementById("editDate").value;
+
+            if (newName.length < 3) {
+                alert("Name must be at least 3 characters.");
+                return;
+            }
+
+            if (!newDate || isNaN(Date.parse(newDate))) {
+                alert("Please enter a valid date and time.");
+                return;
+            }
+
+            const selectedDate = new Date(newDate);
+            const now = new Date();
+            if (selectedDate <= now) {
+                alert("Date must be in the future.");
+                return;
+            }
+
+            fetch(`/api/reservations/${id}`, {
+                method: "PUT",
+                headers: {
+                "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ name: newName, date: newDate }),
+            })
                 .then(res => {
-                    if (res.ok) {
-                        const row = e.target.closest("tr");
-                        row.children[1].textContent = newName.trim();
+                if (res.ok) {
+                    // Actualizar fila en la tabla
+                    const rows = document.querySelectorAll("#reservationTable tbody tr");
+                    rows.forEach(row => {
+                    if (row.children[0].textContent === id) {
+                        row.children[1].textContent = newName;
                         row.children[2].textContent = newDate;
-                        e.target.dataset.name = newName.trim();
-                        e.target.dataset.date = newDate;
-                        alert("Reservation updated successfully.");
-                    } else {
-                        alert("Failed to update reservation.");
+                        // También actualizar el data-* del botón Edit
+                        const editBtn = row.querySelector(".edit-btn");
+                        editBtn.dataset.name = newName;
+                        editBtn.dataset.date = newDate;
                     }
+                    });
+
+                    alert("Reservation updated successfully.");
+                    document.getElementById("editModal").classList.add("hidden");
+                } else {
+                    alert("Failed to update reservation.");
+                }
                 })
                 .catch(err => {
-                    console.error(err);
-                    alert("Error updating reservation.");
+                console.error(err);
+                alert("Error updating reservation.");
                 });
-            }
-        });
+            });
     </script>
+
 </body>
 </html>

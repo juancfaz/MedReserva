@@ -383,3 +383,39 @@ El servidor actualiza la base de datos (por ejemplo, MongoDB), y devuelve una re
     - **Enviar una petición PUT al backend para actualizar la reserva.**
 
     - **Refrescar la tabla para mostrar los nuevos datos.**
+
+
+# 9 🗓️ 25 de julio del 2025.
+
+## 🎯 Objetivo:
+Implementar un formulario emergente (modal) para editar reservas de manera más amigable y evitar usar prompt().
+
+---
+
+## ❓ Preguntas clave.
+
+### ¿Qué es un modal en desarrollo web?
+Un modal es una ventana flotante que aparece sobre la página actual, enfocando la atención del usuario en una tarea específica sin navegar a otra página.
+
+### ¿Por qué usar un modal para edición?
+Permite una experiencia más intuitiva y controlada para ingresar y validar datos, con mejores controles de interfaz y menos interrupciones.
+
+### ¿Cómo se implementa un modal básico con HTML, CSS y JavaScript?
+Se crea un contenedor oculto en HTML que se muestra con CSS cuando es necesario. JS controla su visibilidad y maneja la captura de datos.
+
+## ✅ Tareas realizadas.
+
+1. Creación de la estructura HTML del modal:
+Se añadió un contenedor div con un formulario que incluye campos para editar el nombre completo y la fecha/hora de la reserva, así como botones para guardar o cancelar los cambios.
+
+2. Estilización del modal con CSS:
+Se diseñó el modal para que aparezca centrado en pantalla, con un fondo semitransparente oscuro que atenúa el resto del contenido, logrando que el formulario resalte y sea el foco visual.
+
+3. Implementación de eventos en JavaScript para mostrar el modal:
+Se programó la apertura del modal al hacer clic en el botón "Edit" correspondiente, cargando en el formulario los datos actuales de la reserva para facilitar su edición.
+
+4. Validación y envío de datos al backend:
+Se añadió lógica para validar los datos ingresados en el formulario (longitud mínima del nombre, formato y fecha futura), y se implementó la petición HTTP PUT para actualizar la reserva en la base de datos.
+
+5. Cierre del modal y actualización dinámica de la tabla:
+Al guardar exitosamente, el modal se cierra y los datos en la tabla de reservas se actualizan en tiempo real sin necesidad de recargar la página, mejorando la interacción del usuario.
