@@ -1,15 +1,73 @@
 const express = require("express");
 const path = require("path");
+const session = require("express-session");
 const app = express();
 const db = require("./db");
 
-// Middleware para archivos estáticos y JSON
 app.use(express.static("public"));
-app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Ruta para crear una reservación
-app.post("/reserve", (req, res) => {
+// Configurar express-session
+app.use(session({
+    secret: "mi_secreto_super_seguro_123", // Cambia esto por un secreto seguro
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 // 1 día
+    }
+}));
+
+// Middleware para verificar sesión activa
+function requireLogin(req, res, next) {
+    if (!req.session.user) {
+        return res.status(401).json({ error: "Unauthorized, please login" });
+    }
+    next();
+}
+
+// Endpoint para login
+app.post("/login", (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email and password required" });
+    }
+
+    db.get("SELECT * FROM users WHERE email = ? AND password = ?", [email, password], (err, user) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ error: "Server error" });
+        }
+
+        if (!user) {
+            return res.status(401).json({ error: "Invalid credentials" });
+        }
+
+        // Guardar usuario en sesión
+        req.session.user = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        };
+
+        res.json({ message: "Login successful", user: req.session.user });
+    });
+});
+
+// Endpoint para logout
+app.post("/logout", (req, res) => {
+    req.session.destroy(err => {
+        if (err) {
+            return res.status(500).json({ error: "Failed to logout" });
+        }
+        res.clearCookie("connect.sid");
+        res.json({ message: "Logged out successfully" });
+    });
+});
+
+// Endpoint para crear reservas (solo usuarios logueados)
+app.post("/reserve", requireLogin, (req, res) => {
     const { name, date } = req.body;
 
     if (!name || !date) {
@@ -26,19 +84,36 @@ app.post("/reserve", (req, res) => {
     });
 });
 
-// Ruta para obtener todas las reservaciones
-app.get("/api/reservations", (req, res) => {
-    db.all("SELECT * FROM reservations ORDER BY date ASC", [], (err, rows) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).send("Error fetching reservations.");
-        }
-        res.json(rows);
-    });
+// Obtener reservas (solo usuarios logueados)
+// Usuarios normales solo ven sus reservas, admins ven todas
+app.get("/api/reservations", requireLogin, (req, res) => {
+    if (req.session.user.role === "admin") {
+        // Admin ve todas las reservas
+        db.all("SELECT * FROM reservations ORDER BY date ASC", [], (err, rows) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send("Error fetching reservations.");
+            }
+            res.json(rows);
+        });
+    } else {
+        // Usuario normal ve solo sus reservas (filtrando por nombre)
+        db.all("SELECT * FROM reservations WHERE name = ? ORDER BY date ASC", [req.session.user.name], (err, rows) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send("Error fetching reservations.");
+            }
+            res.json(rows);
+        });
+    }
 });
 
-// Ruta para eliminar una reservación
-app.delete("/api/reservations/:id", (req, res) => {
+// Eliminar reserva (solo admins)
+app.delete("/api/reservations/:id", requireLogin, (req, res) => {
+    if (req.session.user.role !== "admin") {
+        return res.status(403).json({ error: "Forbidden: Admins only" });
+    }
+
     const id = req.params.id;
 
     db.run("DELETE FROM reservations WHERE id = ?", id, function(err) {
@@ -55,8 +130,12 @@ app.delete("/api/reservations/:id", (req, res) => {
     });
 });
 
-// Ruta para editar una reservación
-app.put("/api/reservations/:id", (req, res) => {
+// Actualizar reserva (solo admins)
+app.put("/api/reservations/:id", requireLogin, (req, res) => {
+    if (req.session.user.role !== "admin") {
+        return res.status(403).json({ error: "Forbidden: Admins only" });
+    }
+
     const id = req.params.id;
     const { name, date } = req.body;
 
@@ -81,42 +160,6 @@ app.put("/api/reservations/:id", (req, res) => {
     });
 });
 
-// Ruta para login de usuarios (autenticación básica)
-app.post("/login", (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ error: "Email and password are required." });
-    }
-
-    const sql = "SELECT * FROM users WHERE email = ?";
-    db.get(sql, [email], (err, user) => {
-        if (err) {
-            console.error("DB error:", err.message);
-            return res.status(500).json({ error: "Internal server error." });
-        }
-
-        if (!user) {
-            return res.status(404).json({ error: "User not found." });
-        }
-
-        if (user.password !== password) {
-            return res.status(401).json({ error: "Incorrect password." });
-        }
-
-        res.json({
-            message: "Login successful",
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-            },
-        });
-    });
-});
-
-// Arrancar el servidor
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);

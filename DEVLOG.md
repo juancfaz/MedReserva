@@ -450,3 +450,5 @@ Abrimos el archivo db.js, agregamos la tabla usuarios e insertamos dos usuarios 
 
 2. Backend de Login (Autenticación básica).
 Vamos a permitir que los usuarios (clientes o admins) inicien sesión con su correo y contraseña. Aún no implementaremos sesiones o tokens.
+
+3. Manejo básico de sesión con cookies en Express.
