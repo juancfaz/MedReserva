@@ -3,9 +3,12 @@ const path = require("path");
 const app = express();
 const db = require("./db");
 
+// Middleware para archivos estáticos y JSON
 app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Ruta para crear una reservación
 app.post("/reserve", (req, res) => {
     const { name, date } = req.body;
 
@@ -23,6 +26,7 @@ app.post("/reserve", (req, res) => {
     });
 });
 
+// Ruta para obtener todas las reservaciones
 app.get("/api/reservations", (req, res) => {
     db.all("SELECT * FROM reservations ORDER BY date ASC", [], (err, rows) => {
         if (err) {
@@ -33,6 +37,7 @@ app.get("/api/reservations", (req, res) => {
     });
 });
 
+// Ruta para eliminar una reservación
 app.delete("/api/reservations/:id", (req, res) => {
     const id = req.params.id;
 
@@ -50,6 +55,7 @@ app.delete("/api/reservations/:id", (req, res) => {
     });
 });
 
+// Ruta para editar una reservación
 app.put("/api/reservations/:id", (req, res) => {
     const id = req.params.id;
     const { name, date } = req.body;
@@ -75,7 +81,42 @@ app.put("/api/reservations/:id", (req, res) => {
     });
 });
 
+// Ruta para login de usuarios (autenticación básica)
+app.post("/login", (req, res) => {
+    const { email, password } = req.body;
 
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email and password are required." });
+    }
+
+    const sql = "SELECT * FROM users WHERE email = ?";
+    db.get(sql, [email], (err, user) => {
+        if (err) {
+            console.error("DB error:", err.message);
+            return res.status(500).json({ error: "Internal server error." });
+        }
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found." });
+        }
+
+        if (user.password !== password) {
+            return res.status(401).json({ error: "Incorrect password." });
+        }
+
+        res.json({
+            message: "Login successful",
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    });
+});
+
+// Arrancar el servidor
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);

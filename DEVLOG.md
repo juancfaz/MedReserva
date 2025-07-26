@@ -447,3 +447,6 @@ Porque los usuarios normales solo deben ver o editar sus propias reservas, mient
 
 1. Crear la tabla de usuarios en la base de datos.
 Abrimos el archivo db.js, agregamos la tabla usuarios e insertamos dos usuarios de prueba.
+
+2. Backend de Login (Autenticación básica).
+Vamos a permitir que los usuarios (clientes o admins) inicien sesión con su correo y contraseña. Aún no implementaremos sesiones o tokens.
