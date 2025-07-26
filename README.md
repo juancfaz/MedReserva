@@ -1,4 +1,4 @@
-# SBRS
+# RS
 Reservation System
 
 ## Overview
