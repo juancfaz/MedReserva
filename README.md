@@ -1,5 +1,4 @@
-# RS
-Reservation System
+# Reservation System
 
 ## Overview
 This is a simple reservation web application designed as a portfolio project. It allows users to make reservations via a responsive form and lets administrators view, search, edit, and delete reservations through an admin panel.
