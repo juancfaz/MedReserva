@@ -472,24 +472,6 @@ Integrar el sistema de autenticación con JWT en el frontend, permitiendo a los 
 
 ---
 
-## ❓ Preguntas clave.
-
-¿Cómo se maneja el token JWT en el frontend para mantener la sesión activa?
-
-¿Cómo se ocultan o muestran elementos del menú (como el enlace al panel admin) según el rol del usuario?
-
-¿Cómo se protege el acceso a las rutas y recursos en el backend para que sólo usuarios autorizados puedan realizar ciertas acciones?
-
-¿Cómo se asegura la validación de datos tanto en frontend como en backend para evitar errores y datos inválidos?
-
-¿Qué sucede si el token es inválido o ha expirado? ¿Cómo se maneja la sesión en ese caso?
-
-¿Se pueden hacer reservaciones tanto usuarios normales como administradores?
-
-¿Cómo se implementa la gestión (edición, eliminación) de reservaciones sólo para administradores?
-
-¿Qué medidas de usabilidad se tomaron para mostrar mensajes y modales según el estado del usuario?
-
 ## ✅ Tareas realizadas.
 
 1. Implementación de un sistema de login con JWT en el backend, generando un token con la información del usuario y su rol.
@@ -519,3 +501,25 @@ Integrar el sistema de autenticación con JWT en el frontend, permitiendo a los 
 13. Alertas y mensajes claros para informar al usuario sobre errores, estados de sesión y acciones exitosas.
 
 14. Separación lógica entre usuario normal y administrador para garantizar seguridad y usabilidad.
+
+# 12 🗓️ 26 de julio del 2025.
+
+## 🎯 Objetivo:
+Agregar y validar campos adicionales en el formulario de reserva para capturar información relevante común en sistemas de reservaciones, tales como teléfono, correo, motivo de cita y categoría de servicio. Esto facilitará la gestión y filtrado en el panel administrativo.
+
+---
+
+## ✅ Tareas realizadas.
+
+1. Modificamos el formulario de reserva en index.html para incluir nuevos campos: Número de teléfono (con validación básica), Correo electrónico (con validación), Motivo o descripción de la cita, Categoría del servicio (ejemplo: médica, estética, mecánica)
+
+2. Actualizamos la lógica en app.js para capturar, validar y enviar los nuevos campos junto con el nombre y fecha/hora de la reserva.
+
+3. Adaptamos el backend (server.js) para recibir y almacenar los nuevos campos en la base de datos al crear una reserva.
+
+4. Modificamos la base de datos SQLite en db.js para agregar las columnas correspondientes en la tabla reservations: phone, email, reason, category
+
+5. Ajustamos la API REST para manejar estos campos adicionales en las operaciones CRUD relacionadas con las reservas.
+
+6. Actualizamos el panel administrativo (admin.html y su script) para mostrar los nuevos campos, permitir búsqueda y filtrado basado en ellos, y editar o eliminar registros con toda la información completa.
+

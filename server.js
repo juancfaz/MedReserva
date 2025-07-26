@@ -73,14 +73,16 @@ app.get("/api/reservations", authenticateToken, (req, res) => {
 
 // Crear nueva reserva - usuarios autenticados
 app.post("/reserve", authenticateToken, (req, res) => {
-    const { name, date } = req.body;
+    const { name, phone, email, date, reason, category } = req.body;
 
-    if (!name || !date) {
-        return res.status(400).json({ error: "Missing name or date" });
+    if (!name || !phone || !email || !date || !category) {
+        return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const stmt = db.prepare("INSERT INTO reservations (name, date) VALUES (?, ?)");
-    stmt.run(name, date, function (err) {
+    // Opcional: validar formato aquí también
+
+    const stmt = db.prepare("INSERT INTO reservations (name, phone, email, date, reason, category) VALUES (?, ?, ?, ?, ?, ?)");
+    stmt.run(name, phone, email, date, reason || "", category, function (err) {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: "Error saving reservation" });
@@ -96,14 +98,14 @@ app.put("/api/reservations/:id", authenticateToken, (req, res) => {
     }
 
     const id = req.params.id;
-    const { name, date } = req.body;
+    const { name, phone, email, date, reason, category } = req.body;
 
-    if (!name || !date) {
-        return res.status(400).json({ error: "Name and date are required." });
+    if (!name || !phone || !email || !date || !category) {
+        return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const sql = "UPDATE reservations SET name = ?, date = ? WHERE id = ?";
-    const params = [name, date, id];
+    const sql = "UPDATE reservations SET name = ?, phone = ?, email = ?, date = ?, reason = ?, category = ? WHERE id = ?";
+    const params = [name, phone, email, date, reason || "", category, id];
 
     db.run(sql, params, function (err) {
         if (err) {
@@ -118,6 +120,7 @@ app.put("/api/reservations/:id", authenticateToken, (req, res) => {
         res.json({ message: "Reservation updated successfully." });
     });
 });
+
 
 // Eliminar reserva - solo admin
 app.delete("/api/reservations/:id", authenticateToken, (req, res) => {

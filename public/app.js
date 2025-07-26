@@ -2,15 +2,37 @@ document.querySelector("#reservationForm").addEventListener("submit", function (
     e.preventDefault();
 
     const name = document.getElementById("fname").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const email = document.getElementById("email").value.trim();
     const date = document.getElementById("dtime").value;
+    const reason = document.getElementById("reason").value.trim();
+    const category = document.getElementById("category").value;
 
     if (name === "") {
         alert("Please enter your full name.");
         return;
     }
 
+    // Validar teléfono (mínimo 7 a 15 dígitos, puede iniciar con +)
+    const phoneRegex = /^\+?\d{7,15}$/;
+    if (!phoneRegex.test(phone)) {
+        alert("Please enter a valid phone number.");
+        return;
+    }
+
+    // Validar email (ya valida el input type email, pero puede reforzarse)
+    if (email === "" || !email.includes("@")) {
+        alert("Please enter a valid email address.");
+        return;
+    }
+
     if (date === "") {
         alert("Please select a date and time.");
+        return;
+    }
+
+    if (category === "") {
+        alert("Please select a category.");
         return;
     }
 
@@ -24,7 +46,7 @@ document.querySelector("#reservationForm").addEventListener("submit", function (
 
     const token = localStorage.getItem("token");
     if (!token) {
-        alert("Por favor inicia sesión para hacer una reserva.");
+        alert("Please log in to make a reservation.");
         return;
     }
 
@@ -34,15 +56,15 @@ document.querySelector("#reservationForm").addEventListener("submit", function (
             "Content-Type": "application/json",
             "Authorization": "Bearer " + token
         },
-        body: JSON.stringify({ name, date })
+        body: JSON.stringify({ name, phone, email, date, reason, category })
     })
     .then(res => {
-        if (!res.ok) throw new Error("Error al enviar la reserva");
+        if (!res.ok) throw new Error("Error submitting reservation");
         return res.json();
     })
     .then(data => {
         alert(data.message);
-        document.querySelector("form").reset();
+        document.querySelector("#reservationForm").reset();
     })
     .catch(err => {
         alert(err.message);

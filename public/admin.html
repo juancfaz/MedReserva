@@ -20,12 +20,16 @@
                 <tr>
                     <th>ID</th>
                     <th>Full Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
                     <th>Date and Time</th>
+                    <th>Reason</th>
+                    <th>Category</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Rows will be inserted here -->
+                <!-- Rows dynamically inserted -->
             </tbody>
         </table>
     </div>
@@ -42,13 +46,33 @@
                 <input type="hidden" id="editId" />
                 <label for="editName">Full Name:</label>
                 <input type="text" id="editName" required />
+
+                <label for="editPhone">Phone number:</label>
+                <input type="tel" id="editPhone" pattern="^\+?\d{7,15}$" required />
+
+                <label for="editEmail">Email:</label>
+                <input type="email" id="editEmail" required />
+
                 <label for="editDate">Date and Time:</label>
                 <input type="datetime-local" id="editDate" required />
+
+                <label for="editReason">Reason / Comment:</label>
+                <textarea id="editReason" rows="3"></textarea>
+
+                <label for="editCategory">Category:</label>
+                <select id="editCategory" required>
+                    <option value="medical">Medical</option>
+                    <option value="esthetic">Esthetic</option>
+                    <option value="mechanic">Mechanic</option>
+                    <option value="other">Other</option>
+                </select>
+
                 <div class="modal-buttons">
                     <button type="submit">Save</button>
                     <button type="button" id="cancelEdit">Cancel</button>
                 </div>
             </form>
+
         </div>
     </div>
 
@@ -99,9 +123,13 @@
                     row.innerHTML = `
                         <td>${reservation.id}</td>
                         <td>${reservation.name}</td>
+                        <td>${reservation.phone}</td>
+                        <td>${reservation.email}</td>
                         <td>${reservation.date}</td>
+                        <td>${reservation.reason || ""}</td>
+                        <td>${reservation.category}</td>
                         <td>
-                            <button class="edit-btn" data-id="${reservation.id}" data-name="${reservation.name}" data-date="${reservation.date}">Edit</button>
+                            <button class="edit-btn" data-id="${reservation.id}" data-name="${reservation.name}" data-phone="${reservation.phone}" data-email="${reservation.email}" data-date="${reservation.date}" data-reason="${reservation.reason || ""}" data-category="${reservation.category}">Edit</button>
                             <button class="delete-btn" data-id="${reservation.id}">Delete</button>
                         </td>
                     `;
@@ -168,11 +196,19 @@
             if (e.target && e.target.classList.contains("edit-btn")) {
                 const id = e.target.dataset.id;
                 const name = e.target.dataset.name;
+                const phone = e.target.dataset.phone;
+                const email = e.target.dataset.email;
                 const date = e.target.dataset.date;
+                const reason = e.target.dataset.reason;
+                const category = e.target.dataset.category;
 
                 document.getElementById("editId").value = id;
                 document.getElementById("editName").value = name;
+                document.getElementById("editPhone").value = phone;
+                document.getElementById("editEmail").value = email;
                 document.getElementById("editDate").value = new Date(date).toISOString().slice(0, 16);
+                document.getElementById("editReason").value = reason || "";
+                document.getElementById("editCategory").value = category;
 
                 document.getElementById("editModal").classList.remove("hidden");
             }
@@ -195,10 +231,26 @@
 
             const id = document.getElementById("editId").value;
             const newName = document.getElementById("editName").value.trim();
+            const newPhone = document.getElementById("editPhone").value.trim();
+            const newEmail = document.getElementById("editEmail").value.trim();
             const newDate = document.getElementById("editDate").value;
+            const newReason = document.getElementById("editReason").value.trim();
+            const newCategory = document.getElementById("editCategory").value;
 
+            // Validaciones
             if (newName.length < 3) {
                 alert("El nombre debe tener al menos 3 caracteres.");
+                return;
+            }
+
+            const phoneRegex = /^\+?\d{7,15}$/;
+            if (!phoneRegex.test(newPhone)) {
+                alert("Por favor ingresa un número de teléfono válido.");
+                return;
+            }
+
+            if (!newEmail.includes("@")) {
+                alert("Por favor ingresa un correo válido.");
                 return;
             }
 
@@ -214,6 +266,11 @@
                 return;
             }
 
+            if (!newCategory) {
+                alert("Selecciona una categoría.");
+                return;
+            }
+
             try {
                 const res = await fetch(`/api/reservations/${id}`, {
                     method: "PUT",
@@ -221,19 +278,34 @@
                         "Content-Type": "application/json",
                         "Authorization": "Bearer " + token
                     },
-                    body: JSON.stringify({ name: newName, date: newDate })
+                    body: JSON.stringify({
+                        name: newName,
+                        phone: newPhone,
+                        email: newEmail,
+                        date: newDate,
+                        reason: newReason,
+                        category: newCategory
+                    })
                 });
 
                 if (res.ok) {
-                    // Actualizar fila en la tabla
                     const rows = document.querySelectorAll("#reservationTable tbody tr");
                     rows.forEach(row => {
                         if (row.children[0].textContent === id) {
                             row.children[1].textContent = newName;
-                            row.children[2].textContent = newDate;
+                            row.children[2].textContent = newPhone;
+                            row.children[3].textContent = newEmail;
+                            row.children[4].textContent = newDate;
+                            row.children[5].textContent = newReason;
+                            row.children[6].textContent = newCategory;
+
                             const editBtn = row.querySelector(".edit-btn");
                             editBtn.dataset.name = newName;
+                            editBtn.dataset.phone = newPhone;
+                            editBtn.dataset.email = newEmail;
                             editBtn.dataset.date = newDate;
+                            editBtn.dataset.reason = newReason;
+                            editBtn.dataset.category = newCategory;
                         }
                     });
 
@@ -247,6 +319,7 @@
                 alert("Error al actualizar la reservación.");
             }
         });
+
     </script>
 </body>
 </html>

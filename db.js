@@ -1,14 +1,17 @@
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("./reservations.db");
 
-// Crear tablas si no existen
 db.serialize(() => {
-    // Tabla de reservas
+    // Crear tabla de reservas con campos completos si no existe
     db.run(`
         CREATE TABLE IF NOT EXISTS reservations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
-            date TEXT NOT NULL
+            phone TEXT NOT NULL,
+            email TEXT NOT NULL,
+            date TEXT NOT NULL,
+            reason TEXT,
+            category TEXT NOT NULL
         )
     `);
 

@@ -39,13 +39,31 @@
         <h1>Make a Reservation</h1>
         <form id="reservationForm">
             <label for="fname">Full name:</label>
-            <input type="text" id="fname" name="fname" required />
+            <input type="text" id="fname" name="fname" required>
+
+            <label for="phone">Phone number:</label>
+            <input type="tel" id="phone" name="phone" pattern="^\+?\d{7,15}$" placeholder="+1234567890" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
 
             <label for="dtime">Date and time:</label>
-            <input type="datetime-local" id="dtime" name="dtime" required />
+            <input type="datetime-local" id="dtime" name="dtime" required>
 
+            <label for="reason">Reason / Comment:</label>
+            <textarea id="reason" name="reason" rows="3" placeholder="Reason for the appointment"></textarea>
+
+            <label for="category">Category:</label>
+            <select id="category" name="category" required>
+                <option value="" disabled selected>Select a category</option>
+                <option value="medical">Medical</option>
+                <option value="esthetic">Esthetic</option>
+                <option value="mechanic">Mechanic</option>
+                <option value="other">Other</option>
+            </select>
             <button type="submit">Reserve</button>
         </form>
+
     </div>
 
     <!-- Mensaje para usuarios no autenticados -->
