@@ -53,16 +53,14 @@ This is a simple reservation web application designed as a portfolio project. It
 - **Admin panel: http://localhost:3000/admin.html**
 
 ## Project Structure
-    ```pgsql
-        /public
-            ├── index.html          # User reservation form
-            ├── admin.html          # Admin panel
-            ├── style.css           # Stylesheet
-            └── app.js              # Client-side JavaScript for index.html
-            server.js                 # Express server and API routes
-            db.js                     # SQLite database connection and queries
-            package.json              # npm configuration
-    ```
+    /public
+        ├── index.html          # User reservation form
+        ├── admin.html          # Admin panel
+        ├── style.css           # Stylesheet
+        └── app.js              # Client-side JavaScript for index.html
+        server.js                 # Express server and API routes
+        db.js                     # SQLite database connection and queries
+        package.json              # npm configuration
 
 ## Usage
 - **Make a reservation:**
