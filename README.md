@@ -1,35 +1,35 @@
 # Reservation System
 
 ## Overview
-This is a simple reservation web application designed as a portfolio project. It allows users to make reservations via a responsive form and lets administrators view, search, edit, and delete reservations through an admin panel.
+This is a full-stack reservation web application designed as a portfolio project. It allows users to register as patients or doctors, authenticate via login with JWT, make and manage medical appointment reservations, and enables admins, doctors, and patients to view their respective reservations through role-based dashboards.
 
 ## Features
-- **Responsive reservation form with client-side validation (name and datetime).**
+- **User registration with role selection:** patients and doctors register with additional fields (birthdate, gender, specialty).**
 
-- **Backend server built with Node.js and Express.**
+- **User login with JWT authentication and token-based session management.**
 
-- **Data persistence using SQLite database.**
+- **Role-based access control:**  
+  - Patients can make reservations.  
+  - Doctors and admins can view relevant reservations.  
+  - Admins have full access including editing and deleting reservations.
 
-- **Admin panel to list all reservations in a dynamic table.**
+- **Reservation system:** patients book appointments selecting doctors, date/time, and reason.
 
-- **Search reservations by name.**
+- **Dynamic dashboards:**  
+  - Admins see all reservations with patient and doctor info.  
+  - Doctors see their patients’ reservations.  
+  - Patients see their own reservations.
 
-- **Edit reservations through a modal form.**
+- **Responsive UI with modals for login and signup, form validation, and feedback messages.**
 
-- **Delete reservations with confirmation.**
-
-- **Real-time table updates after edits or deletions.**
-
-- **Basic UI styled with CSS Flexbox and Grid for responsive layouts.**
+- **Backend with Node.js, Express, and SQLite for persistent data storage.**
 
 ## Technologies Used
-- **Frontend: HTML5, CSS3 (Flexbox, Grid), JavaScript (DOM manipulation, Fetch API)**
-
-- **Backend: Node.js, Express.js**
-
-- **Database: SQLite3**
-
-- **Tools: npm, SQLite CLI**
+- **Frontend:** HTML5, CSS3 (Flexbox, Grid), JavaScript (DOM manipulation, Fetch API)  
+- **Backend:** Node.js, Express.js  
+- **Database:** SQLite3  
+- **Authentication:** JWT (JSON Web Tokens)  
+- **Tools:** npm, SQLite CLI
 
 ## Installation
 
@@ -47,14 +47,14 @@ This is a simple reservation web application designed as a portfolio project. It
     node server.js
     ```
 4. Open your browser and navigate to:
-- **User form: http://localhost:3000/**
-
-- **Admin panel: http://localhost:3000/admin.html**
+    - **User interface:** http://localhost:3000/  
+    - **Dashboard (for logged-in users):** http://localhost:3000/dashboard.html
 
 ## Project Structure
+
     /public
         ├── index.html          # User reservation form
-        ├── admin.html          # Admin panel
+        ├── dashboard.html          # User dashboard showing reservations per role
         ├── style.css           # Stylesheet
         └── app.js              # Client-side JavaScript for index.html
         server.js                 # Express server and API routes
@@ -62,11 +62,23 @@ This is a simple reservation web application designed as a portfolio project. It
         package.json              # npm configuration
 
 ## Usage
-- **Make a reservation:**
-Visit the home page, fill out the form with your full name and reservation datetime, and submit. Validations ensure the name is not empty and the datetime is in the future.
+- **Registration:** Users register by selecting a role (patient or doctor), providing required details, and submitting the signup form.
 
-- **Admin panel:**
-Navigate to /admin.html to view all reservations. Use the search box to filter by name. Edit a reservation by clicking “Edit,” updating the data in the modal, and saving. Delete a reservation by clicking “Delete” and confirming.
+- **Login:** Users log in with their email and password. A JWT token is stored in localStorage for session management.
+
+- **Making reservations:** Only authenticated patients can make a reservation by selecting a doctor, date/time, and providing a reason.
+
+- **Viewing reservations:**  
+  - Patients see their own reservations on the dashboard.  
+  - Doctors see reservations with their patients.  
+  - Admins see all reservations with full details.
+
+- **Logout:** Clears the token and resets UI state.
+
+## Notes
+- Passwords are stored in plaintext in this demo project—consider adding hashing for production use.
+- JWT secret is hardcoded for simplicity; store secrets securely in environment variables for deployment.
+- Basic validation and error handling are implemented on both frontend and backend.
 
 ## Credits
-Developed by Juan Faz as part of a learning project in web development and backend integration.
+Developed by Juan Faz as a learning project in full-stack web development, combining frontend, backend, database, and authentication.
