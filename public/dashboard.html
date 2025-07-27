@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mis Reservas</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      background: #f4f6f8;
+    }
+    h1 {
+      color: #333;
+    }
+    .reservations {
+      margin-top: 20px;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .reservations th, .reservations td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      background-color: #fff;
+    }
+    .reservations th {
+      background-color: #f0f0f0;
+    }
+    .status {
+      text-transform: capitalize;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>📅 Mis Reservas</h1>
+  <table class="reservations" id="reservationsTable">
+    <thead>
+      <tr id="tableHeaders">
+        <!-- Headers dinámicos -->
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <!-- Contenido dinámico -->
+    </tbody>
+  </table>
+
+  <script>
+    const token = localStorage.getItem("token");
+
+    fetch("/api/me", {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    })
+    .then(res => res.json())
+    .then(user => {
+      const role = user.role;
+
+      // Cargar reservas
+      fetch("/api/my-reservations", {
+        headers: {
+          Authorization: "Bearer " + token
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        const headersRow = document.getElementById("tableHeaders");
+        const body = document.getElementById("tableBody");
+
+        // Crear encabezados según rol
+        const headers = role === "admin"
+          ? ["ID", "Paciente", "Doctor", "Fecha", "Motivo", "Estado"]
+          : role === "doctor"
+            ? ["ID", "Paciente", "Fecha", "Motivo", "Estado"]
+            : ["ID", "Doctor", "Fecha", "Motivo", "Estado"];
+
+        headersRow.innerHTML = headers.map(h => `<th>${h}</th>`).join("");
+
+        // Rellenar tabla
+        data.forEach(reserva => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${reserva.id}</td>
+            ${
+              role === "admin"
+              ? `<td>${reserva.patient_name}</td><td>${reserva.doctor_name}</td>`
+              : role === "doctor"
+              ? `<td>${reserva.patient_name}</td>`
+              : `<td>${reserva.doctor_name}</td>`
+            }
+            <td>${new Date(reserva.date).toLocaleString()}</td>
+            <td>${reserva.reason || "-"}</td>
+            <td class="status">${reserva.status}</td>
+          `;
+          body.appendChild(row);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

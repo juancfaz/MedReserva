@@ -88,6 +88,57 @@ app.post("/signup", (req, res) => {
     });
 });
 
+// Obtener reservas según el rol del usuario
+app.get("/api/my-reservations", authenticateToken, (req, res) => {
+    const role = req.user.role;
+    const email = req.user.email;
+
+    if (role === "admin") {
+        const sql = `
+            SELECT r.id, p.name AS patient_name, d.name AS doctor_name, r.date, r.reason, r.status
+            FROM reservations r
+            JOIN patients p ON r.patient_id = p.id
+            JOIN doctors d ON r.doctor_id = d.id
+            ORDER BY r.date ASC
+        `;
+        db.all(sql, [], (err, rows) => {
+            if (err) return res.status(500).json({ error: "Error fetching reservations" });
+            res.json(rows);
+        });
+
+    } else if (role === "doctor") {
+        const sql = `
+            SELECT r.id, p.name AS patient_name, r.date, r.reason, r.status
+            FROM reservations r
+            JOIN patients p ON r.patient_id = p.id
+            JOIN doctors d ON r.doctor_id = d.id
+            WHERE d.email = ?
+            ORDER BY r.date ASC
+        `;
+        db.all(sql, [email], (err, rows) => {
+            if (err) return res.status(500).json({ error: "Error fetching reservations" });
+            res.json(rows);
+        });
+
+    } else if (role === "patient") {
+        const sql = `
+            SELECT r.id, d.name AS doctor_name, r.date, r.reason, r.status
+            FROM reservations r
+            JOIN doctors d ON r.doctor_id = d.id
+            JOIN patients p ON r.patient_id = p.id
+            WHERE p.email = ?
+            ORDER BY r.date ASC
+        `;
+        db.all(sql, [email], (err, rows) => {
+            if (err) return res.status(500).json({ error: "Error fetching reservations" });
+            res.json(rows);
+        });
+
+    } else {
+        res.status(403).json({ error: "Invalid role" });
+    }
+});
+
 
 // Middleware para autenticar token
 function authenticateToken(req, res, next) {
