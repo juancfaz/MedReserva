@@ -50,7 +50,7 @@ db.serialize(() => {
         )
     `);
 
-    // Datos de prueba
+    // Admin de prueba
     db.get(`SELECT COUNT(*) as count FROM users`, (err, row) => {
         if (err) {
             console.error("Error al contar usuarios:", err.message);
@@ -59,35 +59,8 @@ db.serialize(() => {
         if (row.count === 0) {
             const insert = db.prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
             insert.run("Admin", "admin@clinic.com", "admin123", "admin");
-            insert.run("Dr. House", "doctor@clinic.com", "doctor123", "doctor");
-            insert.run("Paciente Uno", "paciente@correo.com", "paciente123", "patient");
             insert.finalize();
-            console.log("Usuarios de prueba insertados.");
-        }
-    });
-
-    // Insertar doctor y paciente de prueba si no existen
-    db.get(`SELECT COUNT(*) as count FROM doctors`, (err, row) => {
-        if (row.count === 0) {
-            db.run(`INSERT INTO doctors (name, email, specialty, phone) VALUES (?, ?, ?, ?)`,
-                ["Dr. House", "doctor@clinic.com", "Medicina Interna", "+52123456789"]);
-        }
-    });
-
-    db.get(`SELECT COUNT(*) as count FROM patients`, (err, row) => {
-        if (row.count === 0) {
-            db.run(`INSERT INTO patients (name, email, phone, birthdate, gender) VALUES (?, ?, ?, ?, ?)`,
-                ["Paciente Uno", "paciente@correo.com", "+521111111111", "1990-01-01", "male"]);
-        }
-    });
-
-    // Insertar reserva de prueba si no existe
-    db.get(`SELECT COUNT(*) as count FROM reservations`, (err, row) => {
-        if (row.count === 0) {
-            db.run(`
-                INSERT INTO reservations (patient_id, doctor_id, date, reason, status)
-                VALUES (1, 1, datetime('now', '+1 day'), 'Consulta general', 'pending')
-            `);
+            console.log("Administrador de prueba insertado.");
         }
     });
 });
