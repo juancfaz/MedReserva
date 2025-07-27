@@ -11,11 +11,12 @@
 <body>
     <nav>
         <a href="/">Home</a>
-        <a href="/admin.html">Admin</a>
+        <a href="/dashboard.html" style="display:none;">Dashboard</a>
         <button onclick="openLoginModal()">Login</button>
+        <button id="signupButton" onclick="openSignupModal()">Signup</button>
         <div id="userInfo" style="display:none;">
             <span id="userName"></span>
-            <button onclick="logout()">Cerrar sesión</button>
+            <button onclick="logout()">Logout</button>
         </div>
     </nav>
 
@@ -32,45 +33,77 @@
 
                 <button type="submit">Iniciar sesión</button>
             </form>
-            <p id="loginMessage" style="color:red;"></p>
+            <p id="loginMessage" style="color:red; margin-top: 1em;"></p>
+        </div>
+    </div>
+
+    <div id="signupModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeSignupModal()">&times;</span>
+            <h2>Registro</h2>
+            <form id="signupForm">
+            <label for="signupRole">Tipo de usuario:</label>
+            <select id="signupRole" name="role" required>
+                <option value="">Selecciona un rol</option>
+                <option value="patient">Paciente</option>
+                <option value="doctor">Médico</option>
+            </select>
+
+            <label for="signupName">Nombre:</label>
+            <input type="text" id="signupName" name="name" required>
+
+            <label for="signupEmail">Correo:</label>
+            <input type="email" id="signupEmail" name="email" required>
+
+            <label for="signupPassword">Contraseña:</label>
+            <input type="password" id="signupPassword" name="password" required>
+
+            <label for="signupPhone">Teléfono:</label>
+            <input type="text" id="signupPhone" name="phone">
+
+            <!-- PACIENTE -->
+            <div id="patientFields" style="display:none;">
+                <label for="birthdate">Fecha de nacimiento:</label>
+                <input type="date" id="birthdate" name="birthdate">
+
+                <label for="gender">Género:</label>
+                <select id="gender" name="gender">
+                <option value="">Selecciona</option>
+                <option value="male">Masculino</option>
+                <option value="female">Femenino</option>
+                <option value="other">Otro</option>
+                </select>
+            </div>
+
+            <!-- MÉDICO -->
+            <div id="doctorFields" style="display:none;">
+                <label for="specialty">Especialidad:</label>
+                <input type="text" id="specialty" name="specialty">
+            </div>
+
+            <button type="submit">Registrarse</button>
+            </form>
+            <p id="signupMessage" style="margin-top:1em;"></p>
         </div>
     </div>
 
     <!-- Contenedor del formulario de reservación (solo para usuarios autenticados) -->
     <div class="container" id="reservationContainer" style="display:none;">
-        <h1>Make a Reservation</h1>
+        <h1 style="text-align:center; margin-bottom: 1em;">Make a Reservation</h1>
         <form id="reservationForm">
-            <label for="fname">Full name:</label>
-            <input type="text" id="fname" name="fname" required>
-
-            <label for="phone">Phone number:</label>
-            <input type="tel" id="phone" name="phone" pattern="^\+?\d{7,15}$" placeholder="+1234567890" required>
-
-            <label for="email">Email:</label>
-            <input type="email" id="reservationEmail" name="email" required>
-
-            <label for="dtime">Date and time:</label>
+            <label for="dtime">Fecha y hora:</label>
             <input type="datetime-local" id="dtime" name="dtime" required>
 
-            <label for="reason">Reason / Comment:</label>
-            <textarea id="reason" name="reason" rows="3" placeholder="Reason for the appointment"></textarea>
-
-            <label for="category">Category:</label>
-            <select id="category" name="category" required>
-                <option value="" disabled selected>Select a category</option>
-                <option value="medical">Medical</option>
-                <option value="esthetic">Esthetic</option>
-                <option value="mechanic">Mechanic</option>
-                <option value="other">Other</option>
+            <label for="doctor">Selecciona un médico:</label>
+            <select id="doctorSelect" required>
+                <option value="" disabled selected>Selecciona un médico</option>
             </select>
-            <button type="submit">Reserve</button>
+
+            <label for="reason">Motivo / Comentario:</label>
+            <textarea id="reason" name="reason" rows="3" placeholder="Motivo de la cita"></textarea>
+
+            <button type="submit">Reservar</button>
         </form>
-
-    </div>
-
-    <!-- Mensaje para usuarios no autenticados -->
-    <div id="loginReminder" style="display:none; margin: 1em; color: red;">
-        Por favor, inicia sesión para poder hacer una reservación.
     </div>
 
     <footer>
