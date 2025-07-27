@@ -5,6 +5,12 @@
   padding: 0;
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: 'Segoe UI', sans-serif;
   background: #f9fafb;
@@ -101,14 +107,15 @@ form button:hover {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
 }
+
 
 .modal-content {
   background: white;
@@ -117,6 +124,9 @@ form button:hover {
   width: 90%;
   max-width: 500px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  /* Para evitar que el contenido sea demasiado alto y desborde el viewport */
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal .close {

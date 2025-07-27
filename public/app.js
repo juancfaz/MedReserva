@@ -97,11 +97,13 @@ document.getElementById('loginForm').addEventListener('submit', async function (
 });
 
 function openLoginModal() {
-  document.getElementById('loginModal').style.display = 'block';
+  const modal = document.getElementById('loginModal');
+  modal.style.display = 'flex';
 }
 
 function closeLoginModal() {
-  document.getElementById('loginModal').style.display = 'none';
+  const modal = document.getElementById('loginModal');
+  modal.style.display = 'none';
 }
 
 // Formulario de reservación
@@ -155,11 +157,13 @@ async function loadDoctors() {
 }
 
 function openSignupModal() {
-  document.getElementById("signupModal").style.display = "block";
+  const modal = document.getElementById('signupModal');
+  modal.style.display = 'flex'; // para centrar también
 }
 
 function closeSignupModal() {
-  document.getElementById("signupModal").style.display = "none";
+  const modal = document.getElementById('signupModal');
+  modal.style.display = 'none';
 }
 
 // Mostrar campos según el rol
