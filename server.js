@@ -33,6 +33,62 @@ app.post("/login", (req, res) => {
     });
 });
 
+// Registro / Signup
+app.post("/signup", (req, res) => {
+    const { name, email, password, role, phone, birthdate, gender, specialty } = req.body;
+
+    if (!name || !email || !password || !role) {
+        return res.status(400).json({ error: "Missing required fields (name, email, password, role)" });
+    }
+
+    if (!["admin", "doctor", "patient"].includes(role)) {
+        return res.status(400).json({ error: "Invalid role" });
+    }
+
+    // Verificar que email no esté usado
+    db.get("SELECT id FROM users WHERE email = ?", [email], (err, row) => {
+        if (err) return res.status(500).json({ error: "Database error" });
+        if (row) return res.status(409).json({ error: "Email already registered" });
+
+        // Insertar usuario
+        const insertUser = `INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)`;
+        db.run(insertUser, [name, email, password, role], function (err) {
+            if (err) return res.status(500).json({ error: "Error creating user" });
+
+            const userId = this.lastID;
+
+            // Insertar info extra según rol
+            if (role === "patient") {
+                if (!birthdate || !gender) {
+                    return res.status(400).json({ error: "Missing patient fields: birthdate, gender" });
+                }
+
+                const insertPatient = `INSERT INTO patients (name, email, phone, birthdate, gender) VALUES (?, ?, ?, ?, ?)`;
+                db.run(insertPatient, [name, email, phone || null, birthdate, gender], (err) => {
+                    if (err) return res.status(500).json({ error: "Error creating patient record" });
+                    return res.json({ message: "Patient registered successfully" });
+                });
+
+            } else if (role === "doctor") {
+                if (!specialty) {
+                    return res.status(400).json({ error: "Missing doctor field: specialty" });
+                }
+
+                const insertDoctor = `INSERT INTO doctors (name, email, specialty, phone) VALUES (?, ?, ?, ?)`;
+                db.run(insertDoctor, [name, email, specialty, phone || null], (err) => {
+                    if (err) return res.status(500).json({ error: "Error creating doctor record" });
+                    return res.json({ message: "Doctor registered successfully" });
+                });
+
+            } else {
+                // admin, no info extra
+                return res.json({ message: "Admin registered successfully" });
+            }
+        });
+    });
+});
+
+
 // Middleware para autenticar token
 function authenticateToken(req, res, next) {
     const authHeader = req.headers["authorization"];
