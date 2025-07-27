@@ -3,7 +3,7 @@ document.querySelector("#reservationForm").addEventListener("submit", function (
 
     const name = document.getElementById("fname").value.trim();
     const phone = document.getElementById("phone").value.trim();
-    const email = document.getElementById("email").value.trim();
+    const email = document.getElementById("reservationEmail").value.trim();
     const date = document.getElementById("dtime").value;
     const reason = document.getElementById("reason").value.trim();
     const category = document.getElementById("category").value;
@@ -21,7 +21,7 @@ document.querySelector("#reservationForm").addEventListener("submit", function (
     }
 
     // Validar email (ya valida el input type email, pero puede reforzarse)
-    if (email === "" || !email.includes("@")) {
+    if (email === "" || !email.includes("@") || !email.includes(".")) {
         alert("Please enter a valid email address.");
         return;
     }
@@ -140,7 +140,7 @@ showUserInfo();
 document.getElementById('loginForm').addEventListener('submit', async function (e) {
   e.preventDefault();
 
-  const email = document.getElementById('email').value.trim();
+  const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('password').value;
 
   try {

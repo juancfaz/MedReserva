@@ -523,3 +523,24 @@ Agregar y validar campos adicionales en el formulario de reserva para capturar i
 
 6. Actualizamos el panel administrativo (admin.html y su script) para mostrar los nuevos campos, permitir búsqueda y filtrado basado en ellos, y editar o eliminar registros con toda la información completa.
 
+# 13 🗓️ 26 de julio del 2025.
+
+## 🎯 Objetivo:
+Mejorar la validación y presentación visual del sistema de reservaciones para mejorar la experiencia de usuario (UX/UI) y corregir errores funcionales detectados en el formulario.
+
+---
+
+## ✅ Tareas realizadas.
+
+1. Se identificó un conflicto de IDs duplicados entre el formulario de login y el formulario de reservas (id="email" en ambos).
+
+2. Se renombraron los campos de entrada para evitar conflicto de lectura en JavaScript: En el formulario de login: id="loginEmail". En el formulario de reservas: id="reservationEmail"
+
+3. Se actualizó app.js para utilizar los nuevos IDs y así validar correctamente los datos ingresados.
+
+4. Se creó y aplicó un nuevo archivo de estilos style.css con diseño moderno, colores suaves y tipografía legible.
+
+5. Se mejoró la experiencia del usuario mediante: Bordes redondeados. Colores suaves y coherentes. Botones estilizados con animación de hover. Uso de flexbox y espaciado limpio.
+
+6. Se agregó la fuente Segoe UI desde Google Fonts para un estilo profesional y moderno.
+
