@@ -182,32 +182,30 @@ app.get("/api/reservations", authenticateToken, (req, res) => {
 
 // 🆕 Crear nueva reserva
 app.post("/reserve", authenticateToken, (req, res) => {
-    const { patientEmail, doctorId, date, reason } = req.body;
-
-    if (!patientEmail || !doctorId || !date) {
-        return res.status(400).json({ error: "Missing required fields" });
+    if (req.user.role !== "patient") {
+        return res.status(403).json({ error: "Solo los pacientes pueden hacer reservas" });
     }
 
-    // Buscar ID del paciente por email
+    const { doctorId, date, reason } = req.body;
+    const patientEmail = req.user.email;
+
+    if (!doctorId || !date) {
+        return res.status(400).json({ error: "Faltan campos obligatorios" });
+    }
+
     db.get("SELECT id FROM patients WHERE email = ?", [patientEmail], (err, patient) => {
         if (err || !patient) {
-            return res.status(404).json({ error: "Patient not found" });
+            return res.status(404).json({ error: "Paciente no encontrado" });
         }
 
-        const patientId = patient.id;
-
-        // Insertar reserva
         const stmt = db.prepare(`
             INSERT INTO reservations (patient_id, doctor_id, date, reason, status)
             VALUES (?, ?, ?, ?, 'pending')
         `);
 
-        stmt.run(patientId, doctorId, date, reason || "", function (err) {
-            if (err) {
-                console.error(err);
-                return res.status(500).json({ error: "Error saving reservation" });
-            }
-            res.json({ message: "Reservation successful", id: this.lastID });
+        stmt.run(patient.id, doctorId, date, reason || "", function (err) {
+            if (err) return res.status(500).json({ error: "Error al guardar la reserva" });
+            res.json({ message: "Reserva exitosa", id: this.lastID });
         });
     });
 });
@@ -258,4 +256,11 @@ app.delete("/api/reservations/:id", authenticateToken, (req, res) => {
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
+});
+
+app.get("/api/doctors", (req, res) => {
+    db.all("SELECT id, name, specialty FROM doctors", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: "Error al obtener médicos" });
+        res.json(rows);
+    });
 });
