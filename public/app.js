@@ -23,13 +23,12 @@ function removeToken() {
 function showUserInfo() {
   const token = getToken();
 
-  const guestSection = document.getElementById("howItWorksGuest");
   const loggedSection = document.getElementById("howItWorksLogged");
   const patientDetails = document.getElementById("howItWorksPatient");
   const doctorDetails = document.getElementById("howItWorksDoctor");
   const adminDetails = document.getElementById("howItWorksAdmin");
+  const heroSection = document.getElementById("heroSection");
 
-  if (guestSection) guestSection.style.display = "none";
   if (loggedSection) loggedSection.style.display = "none";
   if (patientDetails) patientDetails.style.display = "none";
   if (doctorDetails) doctorDetails.style.display = "none";
@@ -42,7 +41,8 @@ function showUserInfo() {
     signupButton && (signupButton.style.display = "inline-block");
     reservationContainer && (reservationContainer.style.display = "none");
     loginReminder && (loginReminder.style.display = "block");
-    if (guestSection) guestSection.style.display = "block";
+    
+    if (heroSection) heroSection.style.display = "block";
     return;
   }
 
@@ -70,10 +70,15 @@ function showUserInfo() {
 
       if (user.role === "patient") {
         reservationContainer && (reservationContainer.style.display = "block");
-        loginReminder && (loginReminder.style.display = "none");
         loadDoctors();
       } else {
         reservationContainer && (reservationContainer.style.display = "none");
+      }
+
+      if (user.role === "admin" || user.role === "doctor" || user.role === "patient") {
+        loginReminder && (loginReminder.style.display = "none");
+      }
+      else {
         loginReminder && (loginReminder.style.display = "block");
       }
       if (loggedSection) loggedSection.style.display = "block";
@@ -81,6 +86,7 @@ function showUserInfo() {
       if (user.role === "doctor" && doctorDetails) doctorDetails.style.display = "block";
       if (user.role === "admin" && adminDetails) adminDetails.style.display = "block";
 
+      if (heroSection) heroSection.style.display = "none";
     })
     .catch(() => {
       removeToken();
@@ -90,7 +96,7 @@ function showUserInfo() {
       signupButton && (signupButton.style.display = "inline-block");
       reservationContainer && (reservationContainer.style.display = "none");
       loginReminder && (loginReminder.style.display = "block");
-      if (guestSection) guestSection.style.display = "block";
+      if (heroSection) heroSection.style.display = "block";
     });
 }
 
