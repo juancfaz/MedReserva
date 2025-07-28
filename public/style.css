@@ -165,3 +165,61 @@ footer {
     padding: 1.5em;
   }
 }
+
+.hero {
+  text-align: center;
+  padding: 4em 1em;
+  background-color: #e0f2fe;
+  color: #1e3a8a;
+}
+
+.hero h1 {
+  font-size: 2.5em;
+  margin-bottom: 0.5em;
+}
+
+.hero .highlight {
+  color: #3b82f6;
+}
+
+.how-it-works {
+  text-align: center;
+  padding: 3em 1em;
+  background-color: #fff;
+}
+
+.how-it-works h2 {
+  font-size: 1.8em;
+  margin-bottom: 1em;
+}
+
+.how-it-works ol {
+  list-style: none;
+  padding: 0;
+  font-size: 1.2em;
+  color: #374151;
+}
+
+.how-it-works li {
+  margin-bottom: 0.5em;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5em;
+  padding: 1em;
+  background: #1f2937;
+  color: white;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: white;
+  text-decoration: none;
+  font-size: 0.95em;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
