@@ -2,30 +2,45 @@ const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("./reservations.db");
 
 db.serialize(() => {
-    // TABLA PACIENTES
+    // Primero USERS
+    db.run(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            role TEXT NOT NULL CHECK (role IN ('admin', 'doctor', 'patient'))
+        )
+    `);
+
+    // Luego PATIENTS
     db.run(`
         CREATE TABLE IF NOT EXISTS patients (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
             phone TEXT,
             birthdate TEXT,
-            gender TEXT CHECK(gender IN ('male', 'female', 'other'))
+            gender TEXT CHECK(gender IN ('male', 'female', 'other')),
+            FOREIGN KEY (user_id) REFERENCES users(id)
         )
     `);
 
-    // TABLA MÉDICOS
+    // Luego DOCTORS
     db.run(`
         CREATE TABLE IF NOT EXISTS doctors (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             email TEXT UNIQUE NOT NULL,
             specialty TEXT NOT NULL,
-            phone TEXT
+            phone TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id)
         )
     `);
 
-    // TABLA RESERVAS ACTUALIZADA
+    // Luego RESERVATIONS
     db.run(`
         CREATE TABLE IF NOT EXISTS reservations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,17 +51,6 @@ db.serialize(() => {
             status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'confirmed', 'cancelled')),
             FOREIGN KEY(patient_id) REFERENCES patients(id),
             FOREIGN KEY(doctor_id) REFERENCES doctors(id)
-        )
-    `);
-
-    // TABLA USUARIOS (admin, médico, paciente)
-    db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            role TEXT NOT NULL CHECK (role IN ('admin', 'doctor', 'patient'))
         )
     `);
 

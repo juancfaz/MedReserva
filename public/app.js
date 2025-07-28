@@ -316,3 +316,50 @@ async function loadPatientsTable() {
     console.error(error);
   }
 }
+
+async function deleteDoctor(id) {
+  if (!confirm("¿Seguro que quieres eliminar este doctor? Esta acción no se puede deshacer.")) return;
+
+  try {
+    const res = await fetch(`/api/doctors/${id}`, {
+      method: "DELETE",
+      headers: { "Authorization": "Bearer " + getToken() }
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert(data.message || "Doctor eliminado.");
+      loadDoctorsTable();
+    } else {
+      alert(data.error || "Error al eliminar doctor.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error del servidor al eliminar doctor.");
+  }
+}
+
+async function deletePatient(id) {
+  if (!confirm("¿Seguro que quieres eliminar este paciente? Esta acción no se puede deshacer.")) return;
+
+  try {
+    const res = await fetch(`/api/patients/${id}`, {
+      method: "DELETE",
+      headers: { "Authorization": "Bearer " + getToken() }
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert(data.message || "Paciente eliminado.");
+      loadPatientsTable();
+    } else {
+      alert(data.error || "Error al eliminar paciente.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error del servidor al eliminar paciente.");
+  }
+}
+

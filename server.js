@@ -63,8 +63,8 @@ app.post("/signup", (req, res) => {
                     return res.status(400).json({ error: "Missing patient fields: birthdate, gender" });
                 }
 
-                const insertPatient = `INSERT INTO patients (name, email, phone, birthdate, gender) VALUES (?, ?, ?, ?, ?)`;
-                db.run(insertPatient, [name, email, phone || null, birthdate, gender], (err) => {
+                const insertPatient = ` INSERT INTO patients (user_id, name, email, phone, birthdate, gender) VALUES (?, ?, ?, ?, ?, ?)`;
+                db.run(insertPatient, [userId, name, email, phone || null, birthdate, gender], (err) => {
                     if (err) return res.status(500).json({ error: "Error creating patient record" });
                     return res.json({ message: "Patient registered successfully" });
                 });
@@ -74,8 +74,8 @@ app.post("/signup", (req, res) => {
                     return res.status(400).json({ error: "Missing doctor field: specialty" });
                 }
 
-                const insertDoctor = `INSERT INTO doctors (name, email, specialty, phone) VALUES (?, ?, ?, ?)`;
-                db.run(insertDoctor, [name, email, specialty, phone || null], (err) => {
+                const insertDoctor = ` INSERT INTO doctors (user_id, name, email, specialty, phone) VALUES (?, ?, ?, ?, ?) `;
+                db.run(insertDoctor, [userId, name, email, specialty, phone || null], (err) => {
                     if (err) return res.status(500).json({ error: "Error creating doctor record" });
                     return res.json({ message: "Doctor registered successfully" });
                 });
@@ -277,6 +277,64 @@ app.get("/api/doctorz", authenticateToken, (req, res) => {
         if (err) return res.status(500).json({ error: "Error al obtener médicos" });
         res.json(rows);
     });
+});
+
+// Eliminar doctor + usuario asociado
+app.delete("/api/doctors/:id", authenticateToken, (req, res) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden: Admins only" });
+  }
+
+  const doctorId = req.params.id;
+
+  // Primero obtener el user_id del doctor
+  db.get("SELECT user_id FROM doctors WHERE id = ?", [doctorId], (err, row) => {
+    if (err) return res.status(500).json({ error: "Error en la base de datos" });
+    if (!row) return res.status(404).json({ error: "Doctor no encontrado" });
+
+    const userId = row.user_id;
+
+    // Eliminar doctor
+    db.run("DELETE FROM doctors WHERE id = ?", [doctorId], function (err) {
+      if (err) return res.status(500).json({ error: "Error al eliminar doctor" });
+
+      // Eliminar usuario
+      db.run("DELETE FROM users WHERE id = ?", [userId], function (err) {
+        if (err) return res.status(500).json({ error: "Error al eliminar usuario" });
+
+        res.json({ message: "Doctor y usuario eliminados correctamente" });
+      });
+    });
+  });
+});
+
+// Eliminar paciente + usuario asociado
+app.delete("/api/patients/:id", authenticateToken, (req, res) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden: Admins only" });
+  }
+
+  const patientId = req.params.id;
+
+  // Primero obtener el user_id del paciente
+  db.get("SELECT user_id FROM patients WHERE id = ?", [patientId], (err, row) => {
+    if (err) return res.status(500).json({ error: "Error en la base de datos" });
+    if (!row) return res.status(404).json({ error: "Paciente no encontrado" });
+
+    const userId = row.user_id;
+
+    // Eliminar paciente
+    db.run("DELETE FROM patients WHERE id = ?", [patientId], function (err) {
+      if (err) return res.status(500).json({ error: "Error al eliminar paciente" });
+
+      // Eliminar usuario
+      db.run("DELETE FROM users WHERE id = ?", [userId], function (err) {
+        if (err) return res.status(500).json({ error: "Error al eliminar usuario" });
+
+        res.json({ message: "Paciente y usuario eliminados correctamente" });
+      });
+    });
+  });
 });
 
 const PORT = 3000;
