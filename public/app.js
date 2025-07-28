@@ -1,5 +1,4 @@
 // Elementos DOM
-const adminLink = document.querySelector('nav a[href="/dashboard.html"]');
 const loginButton = document.querySelector('nav button[onclick="openLoginModal()"]');
 const signupButton = document.getElementById("signupButton");
 const userInfoDiv = document.getElementById("userInfo");
@@ -35,7 +34,6 @@ function showUserInfo() {
   if (adminDetails) adminDetails.style.display = "none";
 
   if (!token) {
-    adminLink && (adminLink.style.display = "none");
     userInfoDiv && (userInfoDiv.style.display = "none");
     loginButton && (loginButton.style.display = "inline-block");
     signupButton && (signupButton.style.display = "inline-block");
@@ -54,12 +52,6 @@ function showUserInfo() {
       return res.json();
     })
     .then((user) => {
-      if (["admin", "doctor", "patient"].includes(user.role)) {
-        adminLink && (adminLink.style.display = "inline-block");
-      } else {
-        adminLink && (adminLink.style.display = "none");
-      }
-
       if (userInfoDiv) {
         userInfoDiv.style.display = "flex";
         document.getElementById("userName").textContent = `Hola, ${user.name}`;
@@ -90,7 +82,6 @@ function showUserInfo() {
     })
     .catch(() => {
       removeToken();
-      adminLink && (adminLink.style.display = "none");
       userInfoDiv && (userInfoDiv.style.display = "none");
       loginButton && (loginButton.style.display = "inline-block");
       signupButton && (signupButton.style.display = "inline-block");
