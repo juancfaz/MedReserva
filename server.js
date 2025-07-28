@@ -253,14 +253,33 @@ app.delete("/api/reservations/:id", authenticateToken, (req, res) => {
     });
 });
 
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+app.get("/api/patients", authenticateToken, (req, res) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden: Admins only" });
+  }
+
+  db.all("SELECT id, name, email, phone, birthdate, gender FROM patients", [], (err, rows) => {
+    if (err) return res.status(500).json({ error: "Error al obtener pacientes" });
+    res.json(rows);
+  });
 });
+
 
 app.get("/api/doctors", (req, res) => {
     db.all("SELECT id, name, specialty FROM doctors", [], (err, rows) => {
         if (err) return res.status(500).json({ error: "Error al obtener médicos" });
         res.json(rows);
     });
+});
+
+app.get("/api/doctorz", authenticateToken, (req, res) => {
+  db.all("SELECT id, name, email, specialty, phone FROM doctors", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: "Error al obtener médicos" });
+        res.json(rows);
+    });
+});
+
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
 });

@@ -79,6 +79,15 @@ function showUserInfo() {
       if (user.role === "admin" && adminDetails) adminDetails.style.display = "block";
 
       if (heroSection) heroSection.style.display = "none";
+
+      if (user.role === "admin") {
+        reservationContainer && (reservationContainer.style.display = "none");
+        document.getElementById("adminDashboard").style.display = "block";
+        loadDoctorsTable();
+        loadPatientsTable();
+      } else {
+        document.getElementById("adminDashboard").style.display = "none";
+      }
     })
     .catch(() => {
       removeToken();
@@ -255,3 +264,55 @@ async function loadDoctors() {
 
 // Inicializar la UI con usuario si hay token
 showUserInfo();
+
+async function loadDoctorsTable() {
+  try {
+    const res = await fetch("/api/doctorz", {
+      headers: { "Authorization": "Bearer " + getToken() }
+    });
+    if (!res.ok) throw new Error("Error al obtener doctores");
+    const doctors = await res.json();
+    const tbody = document.querySelector("#doctorsTable tbody");
+    tbody.innerHTML = "";
+    doctors.forEach(doc => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${doc.name}</td>
+        <td>${doc.email || ""}</td>
+        <td>${doc.specialty || ""}</td>
+        <td>${doc.phone || ""}</td>
+        <td><button onclick="deleteDoctor(${doc.id})">Eliminar</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+async function loadPatientsTable() {
+  try {
+    const res = await fetch("/api/patients", {
+      headers: { "Authorization": "Bearer " + getToken() }
+    });
+    if (!res.ok) throw new Error("Error al obtener pacientes");
+    const patients = await res.json();
+    const tbody = document.querySelector("#patientsTable tbody");
+    tbody.innerHTML = "";
+    patients.forEach(pat => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${pat.name}</td>
+        <td>${pat.email || ""}</td>
+        <td>${pat.phone || ""}</td>
+        <td>${pat.birthdate || ""}</td>
+        <td>${pat.gender || ""}</td>
+        <td><button onclick="deletePatient(${pat.id})">Eliminar</button></td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}

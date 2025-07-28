@@ -28,15 +28,49 @@
 
     <!-- HOW IT WORKS PARA USUARIOS AUTENTICADOS -->
     <section class="how-it-works" id="howItWorksLogged" style="display: none;">
-    <h2>¿Cómo funciona según tu perfil?</h2>
+    <h2>¿Cómo funciona?</h2>
     <div id="howItWorksPatient" style="display: none;">
-        <p><strong>Paciente:</strong> Accede a tu panel, revisa doctores disponibles, agenda tus citas y consulta tu historial médico.</p>
+        <p><strong></strong> Accede a tu panel, revisa doctores disponibles, agenda tus citas y consulta tu historial médico.</p>
     </div>
     <div id="howItWorksDoctor" style="display: none;">
-        <p><strong>Médico:</strong> Gestiona tu agenda, confirma o rechaza citas y mantén actualizado tu perfil profesional.</p>
+        <p><strong></strong> Gestiona tu agenda, confirma o rechaza citas y mantén actualizado tu perfil profesional.</p>
     </div>
     <div id="howItWorksAdmin" style="display: none;">
-        <p><strong>Administrador:</strong> Supervisa usuarios, gestiona doctores y pacientes, y mantén el sistema funcionando correctamente.</p>
+        <p><strong></strong> Supervisa usuarios, gestiona doctores y pacientes, y mantén el sistema funcionando correctamente.</p>
+    </div>
+    <div id="adminDashboard" style="display:none; margin-top: 2em;">
+      <h3>Lista de Doctores</h3>
+      <table id="doctorsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%; margin-bottom: 1.5em;">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Especialidad</th>
+            <th>Teléfono</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Doctores cargados dinámicamente aquí -->
+        </tbody>
+      </table>
+
+      <h3>Lista de Pacientes</h3>
+      <table id="patientsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%;">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Fecha de Nacimiento</th>
+            <th>Género</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Pacientes cargados dinámicamente aquí -->
+        </tbody>
+      </table>
     </div>
     </section>
 
