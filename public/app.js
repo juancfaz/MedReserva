@@ -85,6 +85,7 @@ function showUserInfo() {
         document.getElementById("adminDashboard").style.display = "block";
         loadDoctorsTable();
         loadPatientsTable();
+        loadReservations();
       } else {
         document.getElementById("adminDashboard").style.display = "none";
       }
@@ -360,6 +361,44 @@ async function deletePatient(id) {
   } catch (err) {
     console.error(err);
     alert("Error del servidor al eliminar paciente.");
+  }
+}
+
+async function loadReservations() {
+  const token = getToken();
+  if (!token) return;
+
+  try {
+    const res = await fetch("/api/reservations", {
+      headers: {
+        Authorization: "Bearer " + token
+      }
+    });
+
+    const data = await res.json();
+    const tbody = document.getElementById("reservationsTableBody");
+    tbody.innerHTML = "";
+
+    if (res.ok) {
+      data.forEach(resv => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${resv.id}</td>
+          <td>${resv.patient_name}</td>
+          <td>${resv.doctor_name}</td>
+          <td>${resv.date}</td>
+          <td>${resv.reason}</td>
+          <td>${resv.status}</td>
+        `;
+        tbody.appendChild(row);
+      });
+      document.getElementById("reservationsSection").style.display = "block";
+    } else {
+      alert(data.error || "Error al cargar reservaciones.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error de servidor al cargar reservaciones.");
   }
 }
 

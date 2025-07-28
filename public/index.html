@@ -38,6 +38,7 @@
     <div id="howItWorksAdmin" style="display: none;">
         <p><strong></strong> Supervisa usuarios, gestiona doctores y pacientes, y mantén el sistema funcionando correctamente.</p>
     </div>
+
     <div id="adminDashboard" style="display:none; margin-top: 2em;">
       <h3>Lista de Doctores</h3>
       <table id="doctorsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%; margin-bottom: 1.5em;">
@@ -71,6 +72,22 @@
           <!-- Pacientes cargados dinámicamente aquí -->
         </tbody>
       </table>
+
+      <h3>Reservasiones</h3>
+      <table id="reservationsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%; margin-top: 1em;">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Paciente</th>
+            <th>Doctor</th>
+            <th>Fecha</th>
+            <th>Motivo</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="reservationsTableBody"></tbody>
+      </table>
+
     </div>
     </section>
 
