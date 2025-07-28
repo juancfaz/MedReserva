@@ -341,3 +341,40 @@ const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
+
+// ✅ Cambiar estado de una reserva (por ID)
+app.put('/api/reservations/:id/status', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  try {
+    const result = await db.run('UPDATE reservations SET status = ? WHERE id = ?', [status, id]);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Reserva no encontrada' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al cambiar estado de reserva:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ✅ Eliminar reserva (por ID)
+app.delete('/api/reservations/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await db.run('DELETE FROM reservations WHERE id = ?', [id]);
+
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Reserva no encontrada' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al eliminar reserva:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});

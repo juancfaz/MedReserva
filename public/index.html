@@ -36,7 +36,7 @@
         <p><strong></strong> Gestiona tu agenda, confirma o rechaza citas y mantén actualizado tu perfil profesional.</p>
     </div>
     <div id="howItWorksAdmin" style="display: none;">
-        <p><strong></strong> Supervisa usuarios, gestiona doctores y pacientes, y mantén el sistema funcionando correctamente.</p>
+        <p><strong></strong> Supervisa usuarios, gestiona doctores, pacientes y reservaciones.</p>
     </div>
 
     <div id="adminDashboard" style="display:none; margin-top: 2em;">
@@ -73,21 +73,22 @@
         </tbody>
       </table>
 
-      <h3>Reservasiones</h3>
-      <table id="reservationsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%; margin-top: 1em;">
+      <h3>Lista de Reservaciones</h3>
+      <table id="reservationsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%;">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Paciente</th>
-            <th>Doctor</th>
+            <th>Médico</th>
             <th>Fecha</th>
             <th>Motivo</th>
             <th>Estado</th>
+            <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="reservationsTableBody"></tbody>
+        <tbody>
+          <!-- Reservas cargadas dinámicamente aquí -->
+        </tbody>
       </table>
-
     </div>
     </section>
 

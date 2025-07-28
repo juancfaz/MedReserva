@@ -39,7 +39,7 @@ function showUserInfo() {
     signupButton && (signupButton.style.display = "inline-block");
     reservationContainer && (reservationContainer.style.display = "none");
     loginReminder && (loginReminder.style.display = "block");
-    
+
     if (heroSection) heroSection.style.display = "block";
     return;
   }
@@ -69,10 +69,10 @@ function showUserInfo() {
 
       if (user.role === "admin" || user.role === "doctor" || user.role === "patient") {
         loginReminder && (loginReminder.style.display = "none");
-      }
-      else {
+      } else {
         loginReminder && (loginReminder.style.display = "block");
       }
+
       if (loggedSection) loggedSection.style.display = "block";
       if (user.role === "patient" && patientDetails) patientDetails.style.display = "block";
       if (user.role === "doctor" && doctorDetails) doctorDetails.style.display = "block";
@@ -153,6 +153,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   } catch (error) {
     console.error('Error al iniciar sesión:', error);
     document.getElementById('loginMessage').textContent = 'Error en el servidor.';
+    alert('Error al iniciar sesión.');
   }
 });
 
@@ -199,6 +200,7 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
   } catch (error) {
     console.error("Error en el registro:", error);
     document.getElementById("signupMessage").textContent = "Error del servidor.";
+    alert("Error al registrar usuario.");
   }
 });
 
@@ -233,6 +235,7 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
     if (res.ok) {
       alert("Reserva creada con éxito.");
       document.getElementById("reservationForm").reset();
+      showUserInfo();  // Para recargar la lista si está visible
     } else {
       alert(data.error || "Error al crear la reserva.");
     }
@@ -260,6 +263,7 @@ async function loadDoctors() {
     });
   } catch (err) {
     console.error("Error al cargar médicos", err);
+    alert("Error al cargar la lista de médicos.");
   }
 }
 
@@ -282,12 +286,13 @@ async function loadDoctorsTable() {
         <td>${doc.email || ""}</td>
         <td>${doc.specialty || ""}</td>
         <td>${doc.phone || ""}</td>
-        <td><button onclick="deleteDoctor(${doc.id})">Eliminar</button></td>
+        <td><button onclick="deleteDoctor(${doc.id})" style="color:red;">Eliminar</button></td>
       `;
       tbody.appendChild(tr);
     });
   } catch (error) {
     console.error(error);
+    alert("Error al cargar doctores.");
   }
 }
 
@@ -308,13 +313,100 @@ async function loadPatientsTable() {
         <td>${pat.phone || ""}</td>
         <td>${pat.birthdate || ""}</td>
         <td>${pat.gender || ""}</td>
-        <td><button onclick="deletePatient(${pat.id})">Eliminar</button></td>
+        <td><button onclick="deletePatient(${pat.id})" style="color:red;">Eliminar</button></td>
       `;
 
       tbody.appendChild(tr);
     });
   } catch (error) {
     console.error(error);
+    alert("Error al cargar pacientes.");
+  }
+}
+
+async function loadReservations() {
+  const token = localStorage.getItem('token');
+  const response = await fetch('/api/reservations', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!response.ok) return;
+
+  const reservations = await response.json();
+  const tbody = document.querySelector('#reservationsTable tbody');
+  tbody.innerHTML = '';
+
+  for (const r of reservations) {
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td>${r.patient_name || 'Paciente desconocido'}</td>
+      <td>${r.doctor_name || 'Médico desconocido'}</td>
+      <td>${new Date(r.date).toLocaleString()}</td>
+      <td>${r.reason || ''}</td>
+      <td>
+        <select onchange="changeReservationStatus(${r.id}, this.value)">
+          <option value="pending" ${r.status === "pending" ? "selected" : ""}>Pendiente</option>
+          <option value="confirmed" ${r.status === "confirmed" ? "selected" : ""}>Confirmada</option>
+          <option value="cancelled" ${r.status === "cancelled" ? "selected" : ""}>Cancelada</option>
+        </select>
+      </td>
+      <td><button onclick="deleteReservation(${r.id})" style="color:red;">Eliminar</button></td>
+    `;
+
+    tbody.appendChild(tr);
+  }
+}
+
+// Cambiar estado de reserva
+async function changeReservationStatus(id, newStatus) {
+  if (!confirm(`¿Cambiar estado a "${newStatus}"?`)) return;
+
+  try {
+    const res = await fetch(`/api/reservations/${id}/status`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + getToken()
+      },
+      body: JSON.stringify({ status: newStatus })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Estado actualizado.");
+      loadReservations();
+    } else {
+      alert(data.error || "Error al actualizar estado.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error del servidor.");
+  }
+}
+
+async function deleteReservation(id) {
+  if (!confirm("¿Seguro que quieres eliminar esta reserva? Esta acción no se puede deshacer.")) return;
+
+  try {
+    const res = await fetch(`/api/reservations/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: "Bearer " + getToken()
+      }
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Reserva eliminada.");
+      loadReservations();
+    } else {
+      alert(data.error || "Error al eliminar reserva.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error del servidor al eliminar reserva.");
   }
 }
 
@@ -363,42 +455,3 @@ async function deletePatient(id) {
     alert("Error del servidor al eliminar paciente.");
   }
 }
-
-async function loadReservations() {
-  const token = getToken();
-  if (!token) return;
-
-  try {
-    const res = await fetch("/api/reservations", {
-      headers: {
-        Authorization: "Bearer " + token
-      }
-    });
-
-    const data = await res.json();
-    const tbody = document.getElementById("reservationsTableBody");
-    tbody.innerHTML = "";
-
-    if (res.ok) {
-      data.forEach(resv => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${resv.id}</td>
-          <td>${resv.patient_name}</td>
-          <td>${resv.doctor_name}</td>
-          <td>${resv.date}</td>
-          <td>${resv.reason}</td>
-          <td>${resv.status}</td>
-        `;
-        tbody.appendChild(row);
-      });
-      document.getElementById("reservationsSection").style.display = "block";
-    } else {
-      alert(data.error || "Error al cargar reservaciones.");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Error de servidor al cargar reservaciones.");
-  }
-}
-
