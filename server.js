@@ -378,3 +378,10 @@ app.delete('/api/reservations/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
+
+app.get("/api/users", (req, res) => {
+    db.all("SELECT id, name, email, role FROM users", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: "Error al obtener usuarios" });
+        res.json(rows);
+    });
+});

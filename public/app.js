@@ -83,6 +83,7 @@ function showUserInfo() {
       if (user.role === "admin") {
         reservationContainer && (reservationContainer.style.display = "none");
         document.getElementById("adminDashboard").style.display = "block";
+        loadAllUsersTable();
         loadDoctorsTable();
         loadPatientsTable();
         loadReservations();
@@ -357,6 +358,33 @@ async function loadReservations() {
   }
 }
 
+async function loadAllUsersTable() {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await fetch('/api/users', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const users = await response.json();
+
+    const tbody = document.querySelector('#usersTable tbody');
+    tbody.innerHTML = '';
+
+    users.forEach(user => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${user.name}</td>
+        <td>${user.email}</td>
+        <td>${user.role}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (error) {
+    console.error('Error cargando usuarios:', error);
+  }
+}
+
 // Cambiar estado de reserva
 async function changeReservationStatus(id, newStatus) {
   if (!confirm(`¿Cambiar estado a "${newStatus}"?`)) return;
@@ -455,3 +483,32 @@ async function deletePatient(id) {
     alert("Error del servidor al eliminar paciente.");
   }
 }
+
+function filterTablesByText(text) {
+  text = text.toLowerCase();
+
+  // IDs de las tablas que quieres filtrar
+  const tableIds = ["usersTable", "doctorsTable", "patientsTable", "reservationsTable"];
+
+  tableIds.forEach((tableId) => {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    const tbody = table.querySelector("tbody");
+    if (!tbody) return;
+
+    // Filtrar cada fila
+    Array.from(tbody.rows).forEach((row) => {
+      // Texto combinado de todas las celdas
+      const rowText = row.textContent.toLowerCase();
+      // Mostrar fila si contiene texto buscado
+      row.style.display = rowText.includes(text) ? "" : "none";
+    });
+  });
+}
+
+// Evento input para el filtro
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  const query = e.target.value.trim();
+  filterTablesByText(query);
+});
