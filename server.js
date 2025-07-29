@@ -264,6 +264,43 @@ app.get("/api/patients", authenticateToken, (req, res) => {
   });
 });
 
+app.get('/api/doctor/reservations', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+
+  db.get('SELECT id FROM doctors WHERE user_id = ?', [userId], (err, doctor) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Error al buscar doctor' });
+    }
+    if (!doctor) {
+      return res.status(404).json({ error: 'Doctor no encontrado' });
+    }
+
+    const doctorId = doctor.id;
+
+    db.all(`
+      SELECT r.id, r.date, r.reason, r.status,
+             p.name AS patient_name,
+             p.phone AS patient_phone,
+             u.email AS patient_email
+      FROM reservations r
+      JOIN patients p ON r.patient_id = p.id
+      JOIN users u ON p.user_id = u.id
+      WHERE r.doctor_id = ?
+      ORDER BY r.date DESC
+    `, [doctorId], (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Error al obtener reservas' });
+      }
+      // Enviar arreglo (puede estar vacío)
+      return res.json(rows);
+    });
+  });
+});
+
+
+
 
 app.get("/api/doctors", (req, res) => {
     db.all("SELECT id, name, specialty FROM doctors", [], (err, rows) => {

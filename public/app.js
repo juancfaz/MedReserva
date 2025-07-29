@@ -100,6 +100,14 @@ function showUserInfo() {
       } else {
         document.getElementById("adminDashboard").style.display = "none";
       }
+
+      if (user && user.role === 'doctor') {
+        document.getElementById('doctorAppointmentsSection').style.display = 'block';
+        loadDoctorAppointments();
+      }
+      else {
+        document.getElementById('doctorAppointmentsSection').style.display = 'none';
+      }
     })
     .catch(() => {
       // Error: limpiar sesión y UI no autenticada
@@ -110,6 +118,48 @@ function showUserInfo() {
       reservationContainer && (reservationContainer.style.display = "none");
       if (heroSection) heroSection.style.display = "block";
     });
+}
+
+async function loadDoctorAppointments() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/doctor/reservations', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error('No se pudieron cargar las citas del doctor');
+    }
+
+    const appointments = await res.json();
+
+    const table = document.getElementById('doctorAppointmentsTableBody');
+    table.innerHTML = '';
+
+    if (appointments.length === 0) {
+      table.innerHTML = '<tr><td colspan="5">No hay citas registradas.</td></tr>';
+      return;
+    }
+
+    appointments.forEach(app => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${app.date}</td>
+        <td>${app.reason}</td>
+        <td>${app.status}</td>
+        <td>${app.patient_name}</td>
+        <td>${app.patient_email}</td>
+      `;
+      table.appendChild(row);
+    });
+
+  } catch (err) {
+    console.error(err.message);
+  }
 }
 
 
@@ -403,6 +453,51 @@ async function loadAllUsersTable() {
     console.error('Error cargando usuarios:', error);
   }
 }
+
+async function loadDoctorAppointments() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/doctor/reservations', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const data = await res.json();
+    console.log('Respuesta completa de la API:', data);
+
+    if (!Array.isArray(data)) {
+      throw new Error('La respuesta no es un arreglo. Es: ' + JSON.stringify(data));
+    }
+
+    const table = document.getElementById('doctorAppointmentsTableBody');
+    table.innerHTML = '';
+
+    if (data.length === 0) {
+      table.innerHTML = '<tr><td colspan="5">No hay citas registradas.</td></tr>';
+      return;
+    }
+
+    data.forEach(app => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${app.patient_name}</td>
+        <td>${app.patient_email}</td>
+        <td>${app.reason}</td>
+        <td>${app.date}</td>
+        <td>${app.status}</td>
+      `;
+      table.appendChild(row);
+    });
+
+  } catch (err) {
+    console.error('Error al cargar citas del doctor:', err.message);
+  }
+}
+
+
 
 
 /**************************************
