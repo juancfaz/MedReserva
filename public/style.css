@@ -221,3 +221,33 @@ footer {
 .footer-links a:hover {
   text-decoration: underline;
 }
+
+.common-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5em;
+  font-size: 0.95em;
+  font-family: 'Segoe UI', sans-serif;
+  color: #333;
+}
+
+.common-table thead {
+  background-color: #3b82f6;
+  color: white;
+  text-align: left;
+}
+
+.common-table th,
+.common-table td {
+  border: 1px solid #ccc;
+  padding: 0.6em 1em;
+}
+
+.common-table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.common-table tbody tr:hover {
+  background-color: #e0f2fe;
+  cursor: default;
+}

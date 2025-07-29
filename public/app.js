@@ -101,7 +101,7 @@ function showUserInfo() {
         document.getElementById("adminDashboard").style.display = "none";
       }
 
-      if (user && user.role === 'doctor') {
+      if (user.role === 'doctor') {
         document.getElementById('doctorAppointmentsSection').style.display = 'block';
         loadDoctorAppointments();
       }
