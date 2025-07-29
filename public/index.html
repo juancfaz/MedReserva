@@ -39,57 +39,80 @@
         <p><strong></strong> Supervisa usuarios, gestiona doctores, pacientes y reservaciones.</p>
     </div>
 
-    <div id="adminDashboard" style="display:none; margin-top: 2em;">
-      <h3>Lista de Doctores</h3>
-      <table id="doctorsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%; margin-bottom: 1.5em;">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Especialidad</th>
-            <th>Teléfono</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Doctores cargados dinámicamente aquí -->
-        </tbody>
-      </table>
+    <section class="admin-section" id="adminDashboard" style="display:none; margin-top: 2em;">
 
-      <h3>Lista de Pacientes</h3>
-      <table id="patientsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%;">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Fecha de Nacimiento</th>
-            <th>Género</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Pacientes cargados dinámicamente aquí -->
-        </tbody>
-      </table>
+      <h2>Usuarios Registrados</h2>
+      <div class="table-wrapper">
+        <table id="usersTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%; margin-bottom: 2em;">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Rol</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Usuarios cargados dinámicamente -->
+          </tbody>
+        </table>
+      </div>
 
-      <h3>Lista de Reservaciones</h3>
-      <table id="reservationsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%;">
-        <thead>
-          <tr>
-            <th>Paciente</th>
-            <th>Médico</th>
-            <th>Fecha</th>
-            <th>Motivo</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Reservas cargadas dinámicamente aquí -->
-        </tbody>
-      </table>
-    </div>
+      <h2>Lista de Doctores</h2>
+      <div class="table-wrapper">
+        <table id="doctorsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%; margin-bottom: 2em;">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Especialidad</th>
+              <th>Teléfono</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Doctores cargados dinámicamente aquí -->
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Lista de Pacientes</h2>
+      <div class="table-wrapper">
+        <table id="patientsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%; margin-bottom: 2em;">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Teléfono</th>
+              <th>Fecha de Nacimiento</th>
+              <th>Género</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Pacientes cargados dinámicamente aquí -->
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Lista de Reservaciones</h2>
+      <div class="table-wrapper">
+        <table id="reservationsTable" border="1" cellpadding="5" cellspacing="0" style="width: 100%;">
+          <thead>
+            <tr>
+              <th>Paciente</th>
+              <th>Médico</th>
+              <th>Fecha</th>
+              <th>Motivo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Reservas cargadas dinámicamente aquí -->
+          </tbody>
+        </table>
+      </div>
+
     </section>
 
   <!-- Formulario de reserva si es paciente -->
