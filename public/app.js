@@ -83,7 +83,6 @@ function showUserInfo() {
       if (user.role === "admin") {
         reservationContainer && (reservationContainer.style.display = "none");
         document.getElementById("adminDashboard").style.display = "block";
-        loadAllUsers();
         loadDoctorsTable();
         loadPatientsTable();
         loadReservations();
@@ -283,15 +282,11 @@ async function loadDoctorsTable() {
     doctors.forEach(doc => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td data-label="Nombre">${doc.name}</td>
-        <td data-label="Email">${doc.email || ""}</td>
-        <td data-label="Especialidad">${doc.specialty || ""}</td>
-        <td data-label="Teléfono">${doc.phone || ""}</td>
-        <td data-label="Acciones">
-          <button class="table-button delete" onclick="deleteDoctor(${doc.id})" title="Eliminar doctor">
-            Eliminar
-          </button>
-        </td>
+        <td>${doc.name}</td>
+        <td>${doc.email || ""}</td>
+        <td>${doc.specialty || ""}</td>
+        <td>${doc.phone || ""}</td>
+        <td><button onclick="deleteDoctor(${doc.id})" style="color:red;">Eliminar</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -313,17 +308,14 @@ async function loadPatientsTable() {
     patients.forEach(pat => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td data-label="Nombre">${pat.name}</td>
-        <td data-label="Email">${pat.email || ""}</td>
-        <td data-label="Teléfono">${pat.phone || ""}</td>
-        <td data-label="Fecha de Nacimiento">${pat.birthdate || ""}</td>
-        <td data-label="Género">${pat.gender || ""}</td>
-        <td data-label="Acciones">
-          <button class="table-button delete" onclick="deletePatient(${pat.id})" title="Eliminar paciente">
-            Eliminar
-          </button>
-        </td>
+        <td>${pat.name}</td>
+        <td>${pat.email || ""}</td>
+        <td>${pat.phone || ""}</td>
+        <td>${pat.birthdate || ""}</td>
+        <td>${pat.gender || ""}</td>
+        <td><button onclick="deletePatient(${pat.id})" style="color:red;">Eliminar</button></td>
       `;
+
       tbody.appendChild(tr);
     });
   } catch (error) {
@@ -346,63 +338,24 @@ async function loadReservations() {
   for (const r of reservations) {
     const tr = document.createElement('tr');
 
-    // Clase para el select según estado
-    const statusClass = {
-      pending: "status-pending",
-      confirmed: "status-confirmed",
-      cancelled: "status-cancelled"
-    }[r.status] || "";
-
     tr.innerHTML = `
-      <td data-label="Paciente">${r.patient_name || 'Paciente desconocido'}</td>
-      <td data-label="Médico">${r.doctor_name || 'Médico desconocido'}</td>
-      <td data-label="Fecha">${new Date(r.date).toLocaleString()}</td>
-      <td data-label="Motivo">${r.reason || ''}</td>
-      <td data-label="Estado">
-        <select class="status-select ${statusClass}" onchange="changeReservationStatus(${r.id}, this.value)">
+      <td>${r.patient_name || 'Paciente desconocido'}</td>
+      <td>${r.doctor_name || 'Médico desconocido'}</td>
+      <td>${new Date(r.date).toLocaleString()}</td>
+      <td>${r.reason || ''}</td>
+      <td>
+        <select onchange="changeReservationStatus(${r.id}, this.value)">
           <option value="pending" ${r.status === "pending" ? "selected" : ""}>Pendiente</option>
           <option value="confirmed" ${r.status === "confirmed" ? "selected" : ""}>Confirmada</option>
           <option value="cancelled" ${r.status === "cancelled" ? "selected" : ""}>Cancelada</option>
         </select>
       </td>
-      <td data-label="Acciones">
-        <button class="table-button delete" onclick="deleteReservation(${r.id})" title="Eliminar reserva">
-          Eliminar
-        </button>
-      </td>
+      <td><button onclick="deleteReservation(${r.id})" style="color:red;">Eliminar</button></td>
     `;
 
     tbody.appendChild(tr);
   }
 }
-
-async function loadAllUsers() {
-  try {
-    const token = localStorage.getItem('token');
-    const response = await fetch('/api/users', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    const users = await response.json();
-
-    const tbody = document.querySelector('#usersTable tbody');
-    tbody.innerHTML = '';
-
-    users.forEach(user => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${user.name}</td>
-        <td>${user.email}</td>
-        <td>${user.role}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  } catch (error) {
-    console.error('Error cargando usuarios:', error);
-  }
-}
-
 
 // Cambiar estado de reserva
 async function changeReservationStatus(id, newStatus) {
@@ -502,33 +455,3 @@ async function deletePatient(id) {
     alert("Error del servidor al eliminar paciente.");
   }
 }
-
-// Función para filtrar tablas por texto en todas las filas
-function filterTablesByText(text) {
-  text = text.toLowerCase();
-
-  // IDs de las tablas que quieres filtrar
-  const tableIds = ["usersTable", "doctorsTable", "patientsTable", "reservationsTable"];
-
-  tableIds.forEach((tableId) => {
-    const table = document.getElementById(tableId);
-    if (!table) return;
-
-    const tbody = table.querySelector("tbody");
-    if (!tbody) return;
-
-    // Filtrar cada fila
-    Array.from(tbody.rows).forEach((row) => {
-      // Texto combinado de todas las celdas
-      const rowText = row.textContent.toLowerCase();
-      // Mostrar fila si contiene texto buscado
-      row.style.display = rowText.includes(text) ? "" : "none";
-    });
-  });
-}
-
-// Evento input para el filtro
-document.getElementById("searchInput").addEventListener("input", (e) => {
-  const query = e.target.value.trim();
-  filterTablesByText(query);
-});
