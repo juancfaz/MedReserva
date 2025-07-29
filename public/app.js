@@ -497,9 +497,6 @@ async function loadDoctorAppointments() {
   }
 }
 
-
-
-
 /**************************************
  *       Cambiar y eliminar datos     *
  **************************************/
