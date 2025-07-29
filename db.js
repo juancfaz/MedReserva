@@ -2,7 +2,8 @@ const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("./reservations.db");
 
 db.serialize(() => {
-    // Primero USERS
+    // ----------- Tabla USERS -----------
+    // Tabla base para todos los usuarios con roles definidos: admin, doctor, patient
     db.run(`
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -13,7 +14,8 @@ db.serialize(() => {
         )
     `);
 
-    // Luego PATIENTS
+    // ----------- Tabla PATIENTS -----------
+    // Datos adicionales para usuarios con rol patient
     db.run(`
         CREATE TABLE IF NOT EXISTS patients (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +29,8 @@ db.serialize(() => {
         )
     `);
 
-    // Luego DOCTORS
+    // ----------- Tabla DOCTORS -----------
+    // Datos adicionales para usuarios con rol doctor
     db.run(`
         CREATE TABLE IF NOT EXISTS doctors (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,7 +43,8 @@ db.serialize(() => {
         )
     `);
 
-    // Luego RESERVATIONS
+    // ----------- Tabla RESERVATIONS -----------
+    // Registra las citas, relacionando pacientes y doctores
     db.run(`
         CREATE TABLE IF NOT EXISTS reservations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +58,8 @@ db.serialize(() => {
         )
     `);
 
-    // Admin de prueba
+    // ----------- Usuario Admin de prueba -----------
+    // Inserta un usuario admin si la tabla users está vacía (solo una vez)
     db.get(`SELECT COUNT(*) as count FROM users`, (err, row) => {
         if (err) {
             console.error("Error al contar usuarios:", err.message);

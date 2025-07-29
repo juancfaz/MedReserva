@@ -1,11 +1,17 @@
-// Elementos DOM
+/**************************************
+ *          Elementos DOM              *
+ **************************************/
+// Botones y contenedores visibles en UI
 const loginButton = document.querySelector('nav button[onclick="openLoginModal()"]');
 const signupButton = document.getElementById("signupButton");
 const userInfoDiv = document.getElementById("userInfo");
 const reservationContainer = document.getElementById("reservationContainer");
-const loginReminder = document.getElementById("loginReminder");
 
-// Utils de autenticación
+
+/**************************************
+ *          Utilidades                *
+ **************************************/
+// Manejo del token JWT en localStorage
 function getToken() {
   return localStorage.getItem("token");
 }
@@ -18,7 +24,11 @@ function removeToken() {
   localStorage.removeItem("token");
 }
 
-// Mostrar/Ocultar UI según usuario
+
+/**************************************
+ *      Gestión de la Interfaz        *
+ **************************************/
+// Mostrar/Ocultar UI según estado y rol del usuario
 function showUserInfo() {
   const token = getToken();
 
@@ -28,22 +38,23 @@ function showUserInfo() {
   const adminDetails = document.getElementById("howItWorksAdmin");
   const heroSection = document.getElementById("heroSection");
 
+  // Ocultar secciones específicas inicialmente
   if (loggedSection) loggedSection.style.display = "none";
   if (patientDetails) patientDetails.style.display = "none";
   if (doctorDetails) doctorDetails.style.display = "none";
   if (adminDetails) adminDetails.style.display = "none";
 
   if (!token) {
+    // Usuario no autenticado
     userInfoDiv && (userInfoDiv.style.display = "none");
     loginButton && (loginButton.style.display = "inline-block");
     signupButton && (signupButton.style.display = "inline-block");
     reservationContainer && (reservationContainer.style.display = "none");
-    loginReminder && (loginReminder.style.display = "block");
-
     if (heroSection) heroSection.style.display = "block";
     return;
   }
 
+  // Con token, obtener datos del usuario
   fetch("/api/me", {
     headers: { "Authorization": "Bearer " + token },
   })
@@ -52,6 +63,7 @@ function showUserInfo() {
       return res.json();
     })
     .then((user) => {
+      // Mostrar saludo y esconder botones de login/signup
       if (userInfoDiv) {
         userInfoDiv.style.display = "flex";
         document.getElementById("userName").textContent = `Hola, ${user.name}`;
@@ -60,6 +72,7 @@ function showUserInfo() {
       loginButton && (loginButton.style.display = "none");
       signupButton && (signupButton.style.display = "none");
 
+      // Mostrar contenedor de reservaciones sólo para pacientes
       if (user.role === "patient") {
         reservationContainer && (reservationContainer.style.display = "block");
         loadDoctors();
@@ -67,19 +80,16 @@ function showUserInfo() {
         reservationContainer && (reservationContainer.style.display = "none");
       }
 
-      if (user.role === "admin" || user.role === "doctor" || user.role === "patient") {
-        loginReminder && (loginReminder.style.display = "none");
-      } else {
-        loginReminder && (loginReminder.style.display = "block");
-      }
-
       if (loggedSection) loggedSection.style.display = "block";
+
+      // Mostrar detalles según rol
       if (user.role === "patient" && patientDetails) patientDetails.style.display = "block";
       if (user.role === "doctor" && doctorDetails) doctorDetails.style.display = "block";
       if (user.role === "admin" && adminDetails) adminDetails.style.display = "block";
 
       if (heroSection) heroSection.style.display = "none";
 
+      // Dashboard admin
       if (user.role === "admin") {
         reservationContainer && (reservationContainer.style.display = "none");
         document.getElementById("adminDashboard").style.display = "block";
@@ -92,40 +102,41 @@ function showUserInfo() {
       }
     })
     .catch(() => {
+      // Error: limpiar sesión y UI no autenticada
       removeToken();
       userInfoDiv && (userInfoDiv.style.display = "none");
       loginButton && (loginButton.style.display = "inline-block");
       signupButton && (signupButton.style.display = "inline-block");
       reservationContainer && (reservationContainer.style.display = "none");
-      loginReminder && (loginReminder.style.display = "block");
       if (heroSection) heroSection.style.display = "block";
     });
 }
 
-// Logout
+
+/**************************************
+ *            Autenticación           *
+ **************************************/
+// Cerrar sesión
 function logout() {
   removeToken();
   showUserInfo();
 }
 
-// Modales: abrir y cerrar
+// Abrir/Cerrar modales Login y Signup
 function openLoginModal() {
   document.getElementById('loginModal').style.display = 'flex';
 }
-
 function closeLoginModal() {
   document.getElementById('loginModal').style.display = 'none';
 }
-
 function openSignupModal() {
   document.getElementById('signupModal').style.display = 'flex';
 }
-
 function closeSignupModal() {
   document.getElementById('signupModal').style.display = 'none';
 }
 
-// Login form submit
+// Login: enviar formulario
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -158,7 +169,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   }
 });
 
-// Signup form submit
+// Signup: enviar formulario
 document.getElementById('signupForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -171,8 +182,8 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
   const gender = document.getElementById("gender").value;
   const specialty = document.getElementById("specialty").value;
 
+  // Armar payload según rol
   const payload = { name, email, password, role, phone };
-
   if (role === "patient") {
     payload.birthdate = birthdate;
     payload.gender = gender;
@@ -205,14 +216,18 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
   }
 });
 
-// Mostrar campos según rol en signup
+// Mostrar campos personalizados en signup según rol
 document.getElementById("signupRole").addEventListener("change", function () {
   const role = this.value;
   document.getElementById("patientFields").style.display = role === "patient" ? "block" : "none";
   document.getElementById("doctorFields").style.display = role === "doctor" ? "block" : "none";
 });
 
-// Formulario de reservación
+
+/**************************************
+ *         Reservaciones              *
+ **************************************/
+// Enviar formulario de reserva (solo pacientes)
 document.getElementById("reservationForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -236,7 +251,7 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
     if (res.ok) {
       alert("Reserva creada con éxito.");
       document.getElementById("reservationForm").reset();
-      showUserInfo();  // Para recargar la lista si está visible
+      showUserInfo();  // Actualizar UI
     } else {
       alert(data.error || "Error al crear la reserva.");
     }
@@ -246,14 +261,13 @@ document.getElementById("reservationForm").addEventListener("submit", async (e) 
   }
 });
 
-// Cargar lista de doctores para reserva
+// Cargar lista de doctores para select en reserva
 async function loadDoctors() {
   try {
     const res = await fetch("/api/doctors");
     const doctors = await res.json();
     const select = document.getElementById("doctorSelect");
 
-    // Limpia antes para evitar duplicados
     select.innerHTML = '<option value="" disabled selected>Selecciona un médico</option>';
 
     doctors.forEach((doc) => {
@@ -268,9 +282,11 @@ async function loadDoctors() {
   }
 }
 
-// Inicializar la UI con usuario si hay token
-showUserInfo();
 
+/**************************************
+ *           Tablas Admin             *
+ **************************************/
+// Cargar y mostrar tabla de doctores
 async function loadDoctorsTable() {
   try {
     const res = await fetch("/api/doctorz", {
@@ -297,6 +313,7 @@ async function loadDoctorsTable() {
   }
 }
 
+// Cargar y mostrar tabla de pacientes
 async function loadPatientsTable() {
   try {
     const res = await fetch("/api/patients", {
@@ -316,7 +333,6 @@ async function loadPatientsTable() {
         <td>${pat.gender || ""}</td>
         <td><button onclick="deletePatient(${pat.id})" style="color:red;">Eliminar</button></td>
       `;
-
       tbody.appendChild(tr);
     });
   } catch (error) {
@@ -325,6 +341,7 @@ async function loadPatientsTable() {
   }
 }
 
+// Cargar y mostrar tabla de reservas
 async function loadReservations() {
   const token = localStorage.getItem('token');
   const response = await fetch('/api/reservations', {
@@ -358,6 +375,7 @@ async function loadReservations() {
   }
 }
 
+// Cargar y mostrar tabla de usuarios (admin)
 async function loadAllUsersTable() {
   try {
     const token = localStorage.getItem('token');
@@ -385,6 +403,10 @@ async function loadAllUsersTable() {
   }
 }
 
+
+/**************************************
+ *       Cambiar y eliminar datos     *
+ **************************************/
 // Cambiar estado de reserva
 async function changeReservationStatus(id, newStatus) {
   if (!confirm(`¿Cambiar estado a "${newStatus}"?`)) return;
@@ -413,6 +435,7 @@ async function changeReservationStatus(id, newStatus) {
   }
 }
 
+// Eliminar reserva
 async function deleteReservation(id) {
   if (!confirm("¿Seguro que quieres eliminar esta reserva? Esta acción no se puede deshacer.")) return;
 
@@ -438,6 +461,7 @@ async function deleteReservation(id) {
   }
 }
 
+// Eliminar doctor
 async function deleteDoctor(id) {
   if (!confirm("¿Seguro que quieres eliminar este doctor? Esta acción no se puede deshacer.")) return;
 
@@ -461,6 +485,7 @@ async function deleteDoctor(id) {
   }
 }
 
+// Eliminar paciente
 async function deletePatient(id) {
   if (!confirm("¿Seguro que quieres eliminar este paciente? Esta acción no se puede deshacer.")) return;
 
@@ -484,10 +509,14 @@ async function deletePatient(id) {
   }
 }
 
+
+/**************************************
+ *          Filtrado de tablas        *
+ **************************************/
+// Filtrar filas en tablas admin según texto
 function filterTablesByText(text) {
   text = text.toLowerCase();
 
-  // IDs de las tablas que quieres filtrar
   const tableIds = ["usersTable", "doctorsTable", "patientsTable", "reservationsTable"];
 
   tableIds.forEach((tableId) => {
@@ -497,18 +526,14 @@ function filterTablesByText(text) {
     const tbody = table.querySelector("tbody");
     if (!tbody) return;
 
-    // Filtrar cada fila
     Array.from(tbody.rows).forEach((row) => {
-      // Texto combinado de todas las celdas
       const rowText = row.textContent.toLowerCase();
-      // Mostrar fila si contiene texto buscado
       row.style.display = rowText.includes(text) ? "" : "none";
     });
   });
 }
 
-// Evento input para el filtro
+// Evento input para filtro
 document.getElementById("searchInput").addEventListener("input", (e) => {
-  const query = e.target.value.trim();
-  filterTablesByText(query);
+  filterTablesByText(e.target.value.trim());
 });

@@ -116,7 +116,6 @@ form button:hover {
   z-index: 1000;
 }
 
-
 .modal-content {
   background: white;
   padding: 2em;
@@ -124,7 +123,6 @@ form button:hover {
   width: 90%;
   max-width: 500px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  /* Para evitar que el contenido sea demasiado alto y desborde el viewport */
   max-height: 90vh;
   overflow-y: auto;
 }
