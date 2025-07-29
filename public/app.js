@@ -316,7 +316,7 @@ async function loadDoctors() {
 
 
 /**************************************
- *           Tablas Admin             *
+ *          Tablas Admin             *
  **************************************/
 // Cargar y mostrar tabla de doctores
 async function loadDoctorsTable() {
@@ -330,12 +330,12 @@ async function loadDoctorsTable() {
     tbody.innerHTML = "";
     doctors.forEach(doc => {
       const tr = document.createElement("tr");
+      tr.setAttribute("data-id", doc.id);  // <-- agregado
       tr.innerHTML = `
         <td>${doc.name}</td>
         <td>${doc.email || ""}</td>
         <td>${doc.specialty || ""}</td>
         <td>${doc.phone || ""}</td>
-        <td><button onclick="deleteDoctor(${doc.id})" style="color:red;">Eliminar</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -357,13 +357,13 @@ async function loadPatientsTable() {
     tbody.innerHTML = "";
     patients.forEach(pat => {
       const tr = document.createElement("tr");
+      tr.setAttribute("data-id", pat.id); // <-- agregado
       tr.innerHTML = `
         <td>${pat.name}</td>
         <td>${pat.email || ""}</td>
         <td>${pat.phone || ""}</td>
         <td>${pat.birthdate || ""}</td>
         <td>${pat.gender || ""}</td>
-        <td><button onclick="deletePatient(${pat.id})" style="color:red;">Eliminar</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -371,6 +371,7 @@ async function loadPatientsTable() {
     console.error(error);
     alert("Error al cargar pacientes.");
   }
+  addClickEventsToAdminRows();
 }
 
 // Cargar y mostrar tabla de reservas
@@ -387,6 +388,7 @@ async function loadReservations() {
 
   for (const r of reservations) {
     const tr = document.createElement('tr');
+    tr.setAttribute("data-id", r.id); // <-- agregado
 
     tr.innerHTML = `
       <td>${r.patient_name || 'Paciente desconocido'}</td>
@@ -401,11 +403,11 @@ async function loadReservations() {
           <option value="attended" ${r.status === "attended" ? "selected" : ""}>Atendido</option>
         </select>
       </td>
-      <td><button onclick="deleteReservation(${r.id})" style="color:red;">Eliminar</button></td>
     `;
 
     tbody.appendChild(tr);
   }
+  addClickEventsToAdminRows();
 }
 
 // Cargar y mostrar tabla de usuarios (admin)
@@ -424,6 +426,7 @@ async function loadAllUsersTable() {
 
     users.forEach(user => {
       const tr = document.createElement('tr');
+      tr.setAttribute("data-id", user.id); // <-- agregado si tienes id en usuarios
       tr.innerHTML = `
         <td>${user.name}</td>
         <td>${user.email}</td>
@@ -500,6 +503,9 @@ async function changeReservationStatus(id, newStatus) {
 
     if (res.ok) {
       alert("Estado actualizado.");
+      loadAllUsersTable();
+      loadDoctorsTable();
+      loadPatientsTable();
       loadReservations();
     } else {
       alert(data.error || "Error al actualizar estado.");
@@ -526,6 +532,9 @@ async function deleteReservation(id) {
 
     if (res.ok) {
       alert("Reserva eliminada.");
+      loadAllUsersTable();
+      loadDoctorsTable();
+      loadPatientsTable();
       loadReservations();
     } else {
       alert(data.error || "Error al eliminar reserva.");
@@ -550,7 +559,10 @@ async function deleteDoctor(id) {
 
     if (res.ok) {
       alert(data.message || "Doctor eliminado.");
+      loadAllUsersTable();
       loadDoctorsTable();
+      loadPatientsTable();
+      loadReservations();
     } else {
       alert(data.error || "Error al eliminar doctor.");
     }
@@ -574,7 +586,10 @@ async function deletePatient(id) {
 
     if (res.ok) {
       alert(data.message || "Paciente eliminado.");
+      loadAllUsersTable();
+      loadDoctorsTable();
       loadPatientsTable();
+      loadReservations();
     } else {
       alert(data.error || "Error al eliminar paciente.");
     }
@@ -584,6 +599,33 @@ async function deletePatient(id) {
   }
 }
 
+//Eliminar usuario (admin)
+function deleteUser(id) {
+  if (!confirm("¿Seguro que quieres eliminar este usuario? Esta acción no se puede deshacer.")) {
+    return;
+  }
+
+  fetch(`/api/users/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      alert(data.message || "Usuario eliminado.");
+
+      // Recargar tabla de usuarios
+      loadAllUsersTable();
+      loadDoctorsTable();
+      loadPatientsTable();
+      loadReservations();
+    })
+    .catch((err) => {
+      console.error("Error al eliminar usuario:", err);
+      alert("Error al eliminar el usuario.");
+    });
+}
 
 /**************************************
  *          Filtrado de tablas        *
@@ -612,3 +654,93 @@ function filterTablesByText(text) {
 document.getElementById("searchInput").addEventListener("input", (e) => {
   filterTablesByText(e.target.value.trim());
 });
+
+function addClickEventsToAdminRows() {
+  const tables = ['usersTable', 'doctorsTable', 'patientsTable', 'reservationsTable'];
+  const contextMenu = document.getElementById('contextMenu');
+  let currentRow = null;
+  let currentTableId = null;
+
+  tables.forEach(tableId => {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    const tbody = table.querySelector("tbody");
+    if (!tbody || tbody.dataset.listenerAdded === "true") return;
+
+    // Detectar clic derecho (contextmenu)
+    tbody.addEventListener("contextmenu", function (event) {
+      event.preventDefault();
+
+      const row = event.target.closest("tr");
+      if (!row || !tbody.contains(row)) {
+        contextMenu.style.display = "none";
+        return;
+      }
+
+      currentRow = row;
+      currentTableId = tableId;
+
+      // Mostrar menú en la posición del clic
+      contextMenu.style.top = event.pageY + "px";
+      contextMenu.style.left = event.pageX + "px";
+      contextMenu.style.display = "block";
+    });
+
+    tbody.dataset.listenerAdded = "true";
+  });
+
+  // Ocultar menú al hacer clic fuera
+  document.addEventListener("click", () => {
+    if (contextMenu.style.display === "block") {
+      contextMenu.style.display = "none";
+      currentRow = null;
+      currentTableId = null;
+    }
+  });
+
+  // Manejar clic en opciones del menú
+  contextMenu.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("context-menu-item")) return;
+
+    const action = e.target.dataset.action;
+    if (!currentRow || !currentTableId) return;
+
+    // Obtener ID de la fila seleccionada
+    const id = currentRow.getAttribute("data-id");
+    if (!id) {
+      alert("No se pudo determinar el ID de la fila.");
+      contextMenu.style.display = "none";
+      currentRow = null;
+      currentTableId = null;
+      return;
+    }
+
+    switch(action) {
+      case "edit":
+        alert(`Editar fila en tabla ${currentTableId} con ID ${id}`);
+        // Aquí llama a tu función para editar según tabla
+        // Ejemplo: editDoctor(id), editPatient(id), editReservation(id)
+        break;
+
+      case "delete":
+      // Solo llama la función de eliminar, que ya tiene confirm
+      if (currentTableId === "doctorsTable") {
+        deleteDoctor(id);
+      } else if (currentTableId === "patientsTable") {
+        deletePatient(id);
+      } else if (currentTableId === "reservationsTable") {
+        deleteReservation(id);
+      } else if (currentTableId === "usersTable") {
+        deleteUser(id);
+      } else {
+        alert("Eliminar no implementado para esta tabla.");
+      }
+      break;
+    }
+
+    contextMenu.style.display = "none";
+    currentRow = null;
+    currentTableId = null;
+  });
+}

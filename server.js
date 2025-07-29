@@ -374,6 +374,50 @@ app.delete("/api/patients/:id", authenticateToken, (req, res) => {
   });
 });
 
+// Eliminar usuario (por ID)
+app.delete('/api/users/:id', authenticateToken, (req, res) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ error: "Forbidden: Admins only" });
+  }
+
+  const userId = req.params.id;
+
+  // Obtener el usuario para saber rol
+  db.get('SELECT * FROM users WHERE id = ?', [userId], (err, user) => {
+    if (err) return res.status(500).json({ error: 'Error en la base de datos' });
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    // Función para eliminar de users
+    const eliminarUsuario = () => {
+      db.run('DELETE FROM users WHERE id = ?', [userId], function (err) {
+        if (err) return res.status(500).json({ error: 'Error al eliminar usuario' });
+        res.json({ message: 'Usuario eliminado correctamente.' });
+      });
+    };
+
+    // Si es doctor, eliminar de doctors primero
+    if (user.role === 'doctor') {
+      db.run('DELETE FROM doctors WHERE user_id = ?', [userId], function (err) {
+        if (err) return res.status(500).json({ error: 'Error al eliminar doctor' });
+        eliminarUsuario();
+      });
+    } 
+    // Si es paciente, eliminar de patients primero
+    else if (user.role === 'patient') {
+      db.run('DELETE FROM patients WHERE user_id = ?', [userId], function (err) {
+        if (err) return res.status(500).json({ error: 'Error al eliminar paciente' });
+        eliminarUsuario();
+      });
+    } 
+    // Si es admin u otro rol, solo eliminar usuario
+    else {
+      eliminarUsuario();
+    }
+  });
+});
+
+
+
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);

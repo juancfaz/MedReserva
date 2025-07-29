@@ -69,7 +69,6 @@
 							<th>Email</th>
 							<th>Especialidad</th>
 							<th>Teléfono</th>
-							<th>Acciones</th>
 						</tr>
 					</thead>
 					<tbody></tbody>
@@ -84,7 +83,6 @@
 							<th>Teléfono</th>
 							<th>Fecha de Nacimiento</th>
 							<th>Género</th>
-							<th>Acciones</th>
 						</tr>
 					</thead>
 					<tbody></tbody>
@@ -99,7 +97,6 @@
 							<th>Fecha</th>
 							<th>Motivo</th>
 							<th>Estado</th>
-							<th>Acciones</th>
 						</tr>
 					</thead>
 					<tbody></tbody>
@@ -213,5 +210,14 @@
 			<p id="signupMessage" style="margin-top:1em;"></p>
 		</div>
 	</div>
+
+	<!-- Menú contextual personalizado -->
+	<div id="contextMenu" style="position:absolute; display:none; background:#fff; border:1px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index:1000; min-width:150px; border-radius:4px;">
+		<ul style="list-style:none; margin:0; padding:5px 0;">
+			<li class="context-menu-item" data-action="edit" style="padding:8px 12px; cursor:pointer;">Editar</li>
+			<li class="context-menu-item" data-action="delete" style="padding:8px 12px; cursor:pointer; color:red;">Eliminar</li>
+		</ul>
+	</div>
+
 </body>
 </html>
