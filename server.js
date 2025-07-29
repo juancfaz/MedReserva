@@ -88,58 +88,6 @@ app.post("/signup", (req, res) => {
     });
 });
 
-// Obtener reservas según el rol del usuario
-app.get("/api/my-reservations", authenticateToken, (req, res) => {
-    const role = req.user.role;
-    const email = req.user.email;
-
-    if (role === "admin") {
-        const sql = `
-            SELECT r.id, p.name AS patient_name, d.name AS doctor_name, r.date, r.reason, r.status
-            FROM reservations r
-            JOIN patients p ON r.patient_id = p.id
-            JOIN doctors d ON r.doctor_id = d.id
-            ORDER BY r.date ASC
-        `;
-        db.all(sql, [], (err, rows) => {
-            if (err) return res.status(500).json({ error: "Error fetching reservations" });
-            res.json(rows);
-        });
-
-    } else if (role === "doctor") {
-        const sql = `
-            SELECT r.id, p.name AS patient_name, r.date, r.reason, r.status
-            FROM reservations r
-            JOIN patients p ON r.patient_id = p.id
-            JOIN doctors d ON r.doctor_id = d.id
-            WHERE d.email = ?
-            ORDER BY r.date ASC
-        `;
-        db.all(sql, [email], (err, rows) => {
-            if (err) return res.status(500).json({ error: "Error fetching reservations" });
-            res.json(rows);
-        });
-
-    } else if (role === "patient") {
-        const sql = `
-            SELECT r.id, d.name AS doctor_name, r.date, r.reason, r.status
-            FROM reservations r
-            JOIN doctors d ON r.doctor_id = d.id
-            JOIN patients p ON r.patient_id = p.id
-            WHERE p.email = ?
-            ORDER BY r.date ASC
-        `;
-        db.all(sql, [email], (err, rows) => {
-            if (err) return res.status(500).json({ error: "Error fetching reservations" });
-            res.json(rows);
-        });
-
-    } else {
-        res.status(403).json({ error: "Invalid role" });
-    }
-});
-
-
 // Middleware para autenticar token
 function authenticateToken(req, res, next) {
     const authHeader = req.headers["authorization"];
@@ -207,49 +155,6 @@ app.post("/reserve", authenticateToken, (req, res) => {
             if (err) return res.status(500).json({ error: "Error al guardar la reserva" });
             res.json({ message: "Reserva exitosa", id: this.lastID });
         });
-    });
-});
-
-// ✏️ Actualizar reserva
-app.put("/api/reservations/:id", authenticateToken, (req, res) => {
-    if (req.user.role !== "admin") {
-        return res.status(403).json({ error: "Forbidden: Admins only" });
-    }
-
-    const id = req.params.id;
-    const { patientId, doctorId, date, reason, status } = req.body;
-
-    if (!patientId || !doctorId || !date || !status) {
-        return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    const sql = `
-        UPDATE reservations
-        SET patient_id = ?, doctor_id = ?, date = ?, reason = ?, status = ?
-        WHERE id = ?
-    `;
-
-    db.run(sql, [patientId, doctorId, date, reason || "", status, id], function (err) {
-        if (err) return res.status(500).json({ error: "Failed to update reservation" });
-        if (this.changes === 0) return res.status(404).json({ error: "Reservation not found" });
-
-        res.json({ message: "Reservation updated successfully." });
-    });
-});
-
-// ❌ Eliminar reserva
-app.delete("/api/reservations/:id", authenticateToken, (req, res) => {
-    if (req.user.role !== "admin") {
-        return res.status(403).json({ error: "Forbidden: Admins only" });
-    }
-
-    const id = req.params.id;
-
-    db.run("DELETE FROM reservations WHERE id = ?", id, function (err) {
-        if (err) return res.status(500).json({ error: "Failed to delete reservation" });
-        if (this.changes === 0) return res.status(404).json({ error: "Reservation not found" });
-
-        res.json({ success: true });
     });
 });
 
@@ -416,30 +321,9 @@ app.delete('/api/users/:id', authenticateToken, (req, res) => {
   });
 });
 
-
-
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
-});
-
-// ✅ Cambiar estado de una reserva (por ID)
-app.put('/api/reservations/:id/status', authenticateToken, async (req, res) => {
-  const { id } = req.params;
-  const { status } = req.body;
-
-  try {
-    const result = await db.run('UPDATE reservations SET status = ? WHERE id = ?', [status, id]);
-
-    if (result.changes === 0) {
-      return res.status(404).json({ error: 'Reserva no encontrada' });
-    }
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error al cambiar estado de reserva:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
 });
 
 // ✅ Eliminar reserva (por ID)
