@@ -502,3 +502,33 @@ async function deletePatient(id) {
     alert("Error del servidor al eliminar paciente.");
   }
 }
+
+// Función para filtrar tablas por texto en todas las filas
+function filterTablesByText(text) {
+  text = text.toLowerCase();
+
+  // IDs de las tablas que quieres filtrar
+  const tableIds = ["usersTable", "doctorsTable", "patientsTable", "reservationsTable"];
+
+  tableIds.forEach((tableId) => {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    const tbody = table.querySelector("tbody");
+    if (!tbody) return;
+
+    // Filtrar cada fila
+    Array.from(tbody.rows).forEach((row) => {
+      // Texto combinado de todas las celdas
+      const rowText = row.textContent.toLowerCase();
+      // Mostrar fila si contiene texto buscado
+      row.style.display = rowText.includes(text) ? "" : "none";
+    });
+  });
+}
+
+// Evento input para el filtro
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  const query = e.target.value.trim();
+  filterTablesByText(query);
+});
