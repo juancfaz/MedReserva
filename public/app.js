@@ -366,6 +366,7 @@ async function loadReservations() {
           <option value="pending" ${r.status === "pending" ? "selected" : ""}>Pendiente</option>
           <option value="confirmed" ${r.status === "confirmed" ? "selected" : ""}>Confirmada</option>
           <option value="cancelled" ${r.status === "cancelled" ? "selected" : ""}>Cancelada</option>
+          <option value="attended" ${r.status === "attended" ? "selected" : ""}>Atendido</option>
         </select>
       </td>
       <td><button onclick="deleteReservation(${r.id})" style="color:red;">Eliminar</button></td>

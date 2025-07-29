@@ -52,7 +52,7 @@ db.serialize(() => {
             doctor_id INTEGER NOT NULL,
             date TEXT NOT NULL,
             reason TEXT,
-            status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'confirmed', 'cancelled')),
+            status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'confirmed', 'cancelled', 'attended')),
             FOREIGN KEY(patient_id) REFERENCES patients(id),
             FOREIGN KEY(doctor_id) REFERENCES doctors(id)
         )
