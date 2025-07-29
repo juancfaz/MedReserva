@@ -111,7 +111,7 @@ function showUserInfo() {
     })
     .catch(() => {
       // Error: limpiar sesión y UI no autenticada
-      removeToken();
+      //removeToken();
       userInfoDiv && (userInfoDiv.style.display = "none");
       loginButton && (loginButton.style.display = "inline-block");
       signupButton && (signupButton.style.display = "inline-block");
@@ -120,6 +120,9 @@ function showUserInfo() {
     });
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  showUserInfo();
+});
 
 /**************************************
  *            Autenticación           *
