@@ -1,84 +1,96 @@
-# Reservation System
+# MedReserva - Sistema de Gestión de Citas Médicas
 
-## Overview
-This is a full-stack reservation web application designed as a portfolio project. It allows users to register as patients or doctors, authenticate via login with JWT, make and manage medical appointment reservations, and enables admins, doctors, and patients to view their respective reservations through role-based dashboards.
+## Visión General
+MedReserva es una aplicación web full-stack para la gestión de citas médicas, diseñada como proyecto profesional. Permite a los usuarios registrarse como pacientes o doctores, autenticarse mediante JWT, gestionar citas médicas y ofrece dashboards personalizados según el rol del usuario.
 
-## Features
-- **User registration with role selection:** patients and doctors register with additional fields (birthdate, gender, specialty).**
+## Características Principales
 
-- **User login with JWT authentication and token-based session management.**
+### 🚀 Funcionalidades Clave
+- **Sistema de autenticación seguro** con JWT y manejo de sesiones
+- **Tres roles de usuarios**:
+  - **Pacientes**: Pueden agendar, ver y cancelar citas
+  - **Doctores**: Pueden gestionar sus citas (confirmar, cancelar, marcar como atendidas)
+  - **Administradores**: Acceso completo al sistema
 
-- **Role-based access control:**  
-  - Patients can make reservations.  
-  - Doctors and admins can view relevant reservations.  
-  - Admins have full access including editing and deleting reservations.
+- **Dashboards inteligentes**:
+  - **Panel de administración** con gestión completa de usuarios, doctores, pacientes y citas
+  - **Vista para doctores** con filtros avanzados y acciones rápidas
+  - **Panel para pacientes** con historial de citas y opción de cancelación
 
-- **Reservation system:** patients book appointments selecting doctors, date/time, and reason.
+- **Sistema de reservas completo**:
+  - Selección de doctores por especialidad
+  - Validación de fechas y horarios
+  - Estados de citas (pendiente, confirmada, cancelada, atendida)
 
-- **Dynamic dashboards:**  
-  - Admins see all reservations with patient and doctor info.  
-  - Doctors see their patients’ reservations.  
-  - Patients see their own reservations.
+- **Interfaz moderna y responsiva**:
+  - Diseño limpio y accesible
+  - Modales para formularios
+  - Feedback visual claro
 
-- **Responsive UI with modals for login and signup, form validation, and feedback messages.**
+## Tecnologías Utilizadas
 
-- **Backend with Node.js, Express, and SQLite for persistent data storage.**
+### Frontend
+- HTML5 semántico
+- CSS3 (Flexbox, Grid, Animaciones)
+- JavaScript moderno (ES6+)
+- Fetch API para comunicación con el backend
 
-## Technologies Used
-- **Frontend:** HTML5, CSS3 (Flexbox, Grid), JavaScript (DOM manipulation, Fetch API)  
-- **Backend:** Node.js, Express.js  
-- **Database:** SQLite3  
-- **Authentication:** JWT (JSON Web Tokens)  
-- **Tools:** npm, SQLite CLI
+### Backend
+- Node.js con Express
+- SQLite3 como base de datos
+- JWT para autenticación
+- Sistema de rutas protegidas por roles
 
-## Installation
+### Herramientas
+- npm para gestión de paquetes
+- SQLite CLI para administración de base de datos
+- Git para control de versiones
+
+## Instalación y Configuración
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/reservation-system.git
-    cd reservation-system
+    git clone https://github.com/yourusername/ReservationSystem.git
+    cd ReservationSystem
     ```
-2. Install dependencies:
+2. Instalar dependencias:
     ```bash
     npm install
     ```
-3. Run the server:
+3. Iniciar el servidor:
     ```bash
     node server.js
     ```
-4. Open your browser and navigate to:
-    - **User interface:** http://localhost:3000/  
-    - **Dashboard (for logged-in users):** http://localhost:3000/dashboard.html
+4. Abre tu navegador en:
+    http://localhost:3000/  
 
-## Project Structure
+## Estructura del Proyecto
 
-    /public
-        ├── index.html          # User reservation form
-        ├── dashboard.html          # User dashboard showing reservations per role
-        ├── style.css           # Stylesheet
-        └── app.js              # Client-side JavaScript for index.html
-        server.js                 # Express server and API routes
-        db.js                     # SQLite database connection and queries
-        package.json              # npm configuration
+    /ReservationSystem
+    │
+    ├── /public
+    │   ├── index.html          # Página principal
+    │   ├── style.css           # Estilos principales
+    │   └── app.js              # Lógica del frontend
+    │
+    ├── server.js               # Servidor principal y API
+    ├── db.js                   # Configuración de la base de datos
+    ├── package.json            # Configuración del proyecto
+    └── README.md               # Documentación
 
-## Usage
-- **Registration:** Users register by selecting a role (patient or doctor), providing required details, and submitting the signup form.
+## Guía de Uso
 
-- **Login:** Users log in with their email and password. A JWT token is stored in localStorage for session management.
+- **Para Pacientes**
+1. Registro: Completa el formulario con tus datos personales.
+2. Agendar cita: Selecciona un doctor y especialidad. Elige fecha y hora disponible. Describe el motivo de la consulta.
+3. Gestionar citas: Visualiza tu historial de citas. Cancela citas futuras cuando sea necesario
 
-- **Making reservations:** Only authenticated patients can make a reservation by selecting a doctor, date/time, and providing a reason.
+- **Para Doctores**
+1. Registro: Completa tu perfil profesional.
+2. Panel de control: Visualiza todas tus citas agendadas. Filtra por estado (pendientes, confirmadas, etc.). Cambia el estado de las citas. Confirma o cancela citas según disponibilidad.
 
-- **Viewing reservations:**  
-  - Patients see their own reservations on the dashboard.  
-  - Doctors see reservations with their patients.  
-  - Admins see all reservations with full details.
+- **Para Administradores**
+1. Dashboard completo: Gestión de usuarios (crear, editar, eliminar). Visualización de todas las citas del sistema. Estadísticas y reportes básicos. Administración de perfiles médicos.
 
-- **Logout:** Clears the token and resets UI state.
-
-## Notes
-- Passwords are stored in plaintext in this demo project—consider adding hashing for production use.
-- JWT secret is hardcoded for simplicity; store secrets securely in environment variables for deployment.
-- Basic validation and error handling are implemented on both frontend and backend.
-
-## Credits
-Developed by Juan Faz as a learning project in full-stack web development, combining frontend, backend, database, and authentication.
+## Créditos
+Desarrollado por Juan Faz como proyecto profesional full-stack, combinando tecnologías modernas para crear una solución completa de gestión médica.
