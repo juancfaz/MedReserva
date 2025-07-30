@@ -827,7 +827,7 @@ async function editUser(userId) {
                 <input type="email" id="editUserEmail" name="email" value="${user.email || ''}" required>
                 
                 <label for="editUserRole">Rol:</label>
-                <select id="editUserRole" name="role" required>
+                <select id="editUserRole" name="role" required disabled>
                     <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
                     <option value="doctor" ${user.role === 'doctor' ? 'selected' : ''}>Doctor</option>
                     <option value="patient" ${user.role === 'patient' ? 'selected' : ''}>Paciente</option>

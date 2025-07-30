@@ -779,8 +779,13 @@ app.delete('/api/reservations/:id', authenticateToken, async (req, res) => {
   const { id } = req.params;
 
   try {
-    const result = await db.run('DELETE FROM reservations WHERE id = ?', [id]);
-
+    const result = await new Promise((resolve, reject) => {
+      db.run('DELETE FROM reservations WHERE id = ?', [id], function(err) {
+        if (err) reject(err);
+        else resolve(this); // `this.changes`
+      });
+    });
+    
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Reserva no encontrada' });
     }
