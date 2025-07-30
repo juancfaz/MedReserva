@@ -1,5 +1,18 @@
 const sqlite3 = require("sqlite3").verbose();
-const db = new sqlite3.Database("./reservations.db");
+const db = new sqlite3.Database("./reservations.db", (err) => {
+    if (err) {
+        console.error("Error abriendo la base de datos:", err.message);
+    } else {
+        db.run("PRAGMA foreign_keys = ON", (err) => {
+            if (err) {
+                console.error("Error al activar foreign_keys:", err.message);
+            } else {
+                console.log("✅ Claves foráneas activadas.");
+            }
+        });
+    }
+});
+
 
 db.serialize(() => {
     // ----------- Tabla USERS -----------
@@ -53,8 +66,8 @@ db.serialize(() => {
             date TEXT NOT NULL,
             reason TEXT,
             status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'confirmed', 'cancelled', 'attended')),
-            FOREIGN KEY(patient_id) REFERENCES patients(id),
-            FOREIGN KEY(doctor_id) REFERENCES doctors(id)
+            FOREIGN KEY(patient_id) REFERENCES patients(id) ON DELETE CASCADE,
+            FOREIGN KEY(doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
         )
     `);
 
