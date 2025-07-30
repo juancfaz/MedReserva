@@ -588,6 +588,475 @@ function deleteUser(id) {
 }
 
 /**************************************
+ * Funciones de Edición
+ **************************************/
+
+// Función principal para editar cualquier entidad
+function editEntity(tableId, id) {
+    switch(tableId) {
+        case 'usersTable':
+            editUser(id);
+            break;
+        case 'doctorsTable':
+            editDoctor(id);
+            break;
+        case 'patientsTable':
+            editPatient(id);
+            break;
+        case 'reservationsTable':
+            editReservation(id);
+            break;
+        default:
+            alert('Edición no implementada para esta tabla');
+    }
+}
+
+async function editPatient(patientId) {
+    try {
+        // Obtener datos del paciente
+        const res = await fetch(`/api/patients/${patientId}`, {
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        });
+        
+        if (!res.ok) throw new Error('Error al obtener paciente');
+        const patient = await res.json();
+        
+        // Crear modal de edición
+        const modalContent = `
+            <h2>Editar Paciente</h2>
+            <form id="editPatientForm">
+                <input type="hidden" name="id" value="${patientId}">
+                
+                <label for="editPatientName">Nombre:</label>
+                <input type="text" id="editPatientName" name="name" value="${patient.name || ''}" required>
+                
+                <label for="editPatientEmail">Email:</label>
+                <input type="email" id="editPatientEmail" name="email" value="${patient.email || ''}" required>
+                
+                <label for="editPatientPhone">Teléfono:</label>
+                <input type="text" id="editPatientPhone" name="phone" value="${patient.phone || ''}">
+                
+                <label for="editPatientBirthdate">Fecha de Nacimiento:</label>
+                <input type="date" id="editPatientBirthdate" name="birthdate" value="${patient.birthdate || ''}" required>
+                
+                <label for="editPatientGender">Género:</label>
+                <select id="editPatientGender" name="gender" required>
+                    <option value="male" ${patient.gender === 'male' ? 'selected' : ''}>Masculino</option>
+                    <option value="female" ${patient.gender === 'female' ? 'selected' : ''}>Femenino</option>
+                    <option value="other" ${patient.gender === 'other' ? 'selected' : ''}>Otro</option>
+                </select>
+                
+                <button type="submit">Guardar Cambios</button>
+            </form>
+        `;
+        
+        showEditModal(modalContent);
+        
+        // Manejar envío del formulario
+        document.getElementById('editPatientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                name: document.getElementById('editPatientName').value,
+                email: document.getElementById('editPatientEmail').value,
+                phone: document.getElementById('editPatientPhone').value,
+                birthdate: document.getElementById('editPatientBirthdate').value,
+                gender: document.getElementById('editPatientGender').value
+            };
+            
+            try {
+                const updateRes = await fetch(`/api/patients/${patientId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (updateRes.ok) {
+                    alert('Paciente actualizado correctamente');
+                    closeEditModal();
+                    // Recargar datos
+                    loadPatientsTable();
+                    loadAllUsersTable();
+                    loadReservations();
+                } else {
+                    const error = await updateRes.json();
+                    throw new Error(error.error || 'Error al actualizar');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error al actualizar paciente: ' + err.message);
+            }
+        });
+        
+    } catch (err) {
+        console.error(err);
+        alert('Error: ' + err.message);
+    }
+}
+
+async function editReservation(reservationId) {
+    try {
+        // Obtener datos de la reservación
+        const res = await fetch(`/api/reservations/${reservationId}`, {
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        });
+        
+        if (!res.ok) throw new Error('Error al obtener reservación');
+        const reservation = await res.json();
+        
+        // Formatear fecha para el input datetime-local
+        const date = new Date(reservation.date);
+        const formattedDate = date.toISOString().slice(0, 16);
+        
+        // Crear modal de edición
+        const modalContent = `
+            <h2>Editar Reservación</h2>
+            <form id="editReservationForm">
+                <input type="hidden" name="id" value="${reservationId}">
+                
+                <label for="editReservationDate">Fecha y Hora:</label>
+                <input type="datetime-local" id="editReservationDate" name="date" value="${formattedDate}" required>
+                
+                <label for="editReservationReason">Motivo:</label>
+                <textarea id="editReservationReason" name="reason" rows="3">${reservation.reason || ''}</textarea>
+                
+                <label for="editReservationStatus">Estado:</label>
+                <select id="editReservationStatus" name="status" required>
+                    <option value="pending" ${reservation.status === 'pending' ? 'selected' : ''}>Pendiente</option>
+                    <option value="confirmed" ${reservation.status === 'confirmed' ? 'selected' : ''}>Confirmada</option>
+                    <option value="cancelled" ${reservation.status === 'cancelled' ? 'selected' : ''}>Cancelada</option>
+                    <option value="attended" ${reservation.status === 'attended' ? 'selected' : ''}>Atendida</option>
+                </select>
+                
+                <button type="submit">Guardar Cambios</button>
+            </form>
+        `;
+        
+        showEditModal(modalContent);
+        
+        // Manejar envío del formulario
+        document.getElementById('editReservationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                date: document.getElementById('editReservationDate').value,
+                reason: document.getElementById('editReservationReason').value,
+                status: document.getElementById('editReservationStatus').value
+            };
+            
+            try {
+                const updateRes = await fetch(`/api/reservations/${reservationId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (updateRes.ok) {
+                    alert('Reservación actualizada correctamente');
+                    closeEditModal();
+                    // Recargar datos
+                    loadReservations();
+                    if (document.getElementById('doctorAppointmentsSection').style.display !== 'none') {
+                        loadDoctorAppointments();
+                    }
+                } else {
+                    const error = await updateRes.json();
+                    throw new Error(error.error || 'Error al actualizar');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error al actualizar reservación: ' + err.message);
+            }
+        });
+        
+    } catch (err) {
+        console.error(err);
+        alert('Error: ' + err.message);
+    }
+}
+
+// Editar usuario (y su relación con doctor/patient si existe)
+async function editUser(userId) {
+    try {
+        // Obtener datos del usuario y sus perfiles específicos
+        const [userRes, patientRes, doctorRes] = await Promise.all([
+            fetch(`/api/users/${userId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            }),
+            fetch(`/api/user-patient-info/${userId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            }),
+            fetch(`/api/user-doctor-info/${userId}`, {
+                headers: {
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
+        ]);
+        
+        if (!userRes.ok) throw new Error('Error al obtener usuario');
+        const user = await userRes.json();
+        
+        let patientInfo = null;
+        if (patientRes.ok) patientInfo = await patientRes.json();
+        
+        let doctorInfo = null;
+        if (doctorRes.ok) doctorInfo = await doctorRes.json();
+
+        // Crear modal de edición con campos dinámicos
+        const modalContent = `
+            <h2>Editar Usuario</h2>
+            <form id="editUserForm">
+                <input type="hidden" name="id" value="${userId}">
+                
+                <label for="editUserName">Nombre:</label>
+                <input type="text" id="editUserName" name="name" value="${user.name || ''}" required>
+                
+                <label for="editUserEmail">Email:</label>
+                <input type="email" id="editUserEmail" name="email" value="${user.email || ''}" required>
+                
+                <label for="editUserRole">Rol:</label>
+                <select id="editUserRole" name="role" required>
+                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                    <option value="doctor" ${user.role === 'doctor' ? 'selected' : ''}>Doctor</option>
+                    <option value="patient" ${user.role === 'patient' ? 'selected' : ''}>Paciente</option>
+                </select>
+                
+                <!-- Campos para pacientes -->
+                <div id="patientFieldsContainer" style="${user.role === 'patient' ? '' : 'display: none;'}">
+                    <label for="editPatientPhone">Teléfono:</label>
+                    <input type="text" id="editPatientPhone" name="phone" 
+                           value="${patientInfo?.phone || ''}">
+                    
+                    <label for="editPatientBirthdate">Fecha de Nacimiento:</label>
+                    <input type="date" id="editPatientBirthdate" name="birthdate" 
+                           value="${patientInfo?.birthdate || ''}" ${user.role === 'patient' ? 'required' : ''}>
+                    
+                    <label for="editPatientGender">Género:</label>
+                    <select id="editPatientGender" name="gender" ${user.role === 'patient' ? 'required' : ''}>
+                        <option value="">Seleccione</option>
+                        <option value="male" ${patientInfo?.gender === 'male' ? 'selected' : ''}>Masculino</option>
+                        <option value="female" ${patientInfo?.gender === 'female' ? 'selected' : ''}>Femenino</option>
+                        <option value="other" ${patientInfo?.gender === 'other' ? 'selected' : ''}>Otro</option>
+                    </select>
+                </div>
+                
+                <!-- Campos para doctores -->
+                <div id="doctorFieldsContainer" style="${user.role === 'doctor' ? '' : 'display: none;'}">
+                    <label for="editDoctorSpecialty">Especialidad:</label>
+                    <input type="text" id="editDoctorSpecialty" name="specialty" 
+                           value="${doctorInfo?.specialty || ''}" ${user.role === 'doctor' ? 'required' : ''}>
+                    
+                    <label for="editDoctorPhone">Teléfono:</label>
+                    <input type="text" id="editDoctorPhone" name="doctorPhone" 
+                           value="${doctorInfo?.phone || ''}">
+                </div>
+                
+                <button type="submit">Guardar Cambios</button>
+            </form>
+        `;
+        
+        showEditModal(modalContent);
+        
+        // Mostrar/ocultar campos según rol
+        document.getElementById('editUserRole').addEventListener('change', function() {
+            const role = this.value;
+            document.getElementById('patientFieldsContainer').style.display = role === 'patient' ? 'block' : 'none';
+            document.getElementById('doctorFieldsContainer').style.display = role === 'doctor' ? 'block' : 'none';
+            
+            // Actualizar requeridos
+            document.getElementById('editPatientBirthdate').required = role === 'patient';
+            document.getElementById('editPatientGender').required = role === 'patient';
+            document.getElementById('editDoctorSpecialty').required = role === 'doctor';
+        });
+
+        // Manejar envío del formulario
+        document.getElementById('editUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                name: document.getElementById('editUserName').value,
+                email: document.getElementById('editUserEmail').value,
+                role: document.getElementById('editUserRole').value
+            };
+            
+            // Agregar campos específicos según rol
+            if (formData.role === 'patient') {
+                formData.phone = document.getElementById('editPatientPhone').value;
+                formData.birthdate = document.getElementById('editPatientBirthdate').value;
+                formData.gender = document.getElementById('editPatientGender').value;
+                
+                if (!formData.birthdate || !formData.gender) {
+                    alert('Fecha de nacimiento y género son requeridos para pacientes');
+                    return;
+                }
+            } else if (formData.role === 'doctor') {
+                formData.specialty = document.getElementById('editDoctorSpecialty').value;
+                formData.phone = document.getElementById('editDoctorPhone').value;
+                
+                if (!formData.specialty) {
+                    alert('Especialidad es requerida para doctores');
+                    return;
+                }
+            }
+            
+            try {
+                const updateRes = await fetch(`/api/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (updateRes.ok) {
+                    alert('Usuario actualizado correctamente');
+                    closeEditModal();
+                    // Recargar todas las tablas afectadas
+                    loadAllUsersTable();
+                    loadDoctorsTable();
+                    loadPatientsTable();
+                    loadReservations();
+                } else {
+                    const error = await updateRes.json();
+                    throw new Error(error.error || 'Error al actualizar');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error al actualizar usuario: ' + err.message);
+            }
+        });
+        
+    } catch (err) {
+        console.error(err);
+        alert('Error: ' + err.message);
+    }
+}
+
+// Editar doctor (y su usuario asociado)
+async function editDoctor(doctorId) {
+    try {
+        // Obtener datos del doctor
+        const res = await fetch(`/api/doctors/${doctorId}`, {
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        });
+        
+        if (!res.ok) throw new Error('Error al obtener doctor');
+        const doctor = await res.json();
+        
+        // Crear modal de edición
+        const modalContent = `
+            <h2>Editar Doctor</h2>
+            <form id="editDoctorForm">
+                <input type="hidden" name="id" value="${doctorId}">
+                
+                <label for="editDoctorName">Nombre:</label>
+                <input type="text" id="editDoctorName" name="name" value="${doctor.name || ''}" required>
+                
+                <label for="editDoctorEmail">Email:</label>
+                <input type="email" id="editDoctorEmail" name="email" value="${doctor.email || ''}" required>
+                
+                <label for="editDoctorSpecialty">Especialidad:</label>
+                <input type="text" id="editDoctorSpecialty" name="specialty" value="${doctor.specialty || ''}" required>
+                
+                <label for="editDoctorPhone">Teléfono:</label>
+                <input type="text" id="editDoctorPhone" name="phone" value="${doctor.phone || ''}">
+                
+                <button type="submit">Guardar Cambios</button>
+            </form>
+        `;
+        
+        showEditModal(modalContent);
+        
+        // Manejar envío del formulario
+        document.getElementById('editDoctorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                name: document.getElementById('editDoctorName').value,
+                email: document.getElementById('editDoctorEmail').value,
+                specialty: document.getElementById('editDoctorSpecialty').value,
+                phone: document.getElementById('editDoctorPhone').value
+            };
+            
+            try {
+                const updateRes = await fetch(`/api/doctors/${doctorId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (updateRes.ok) {
+                    alert('Doctor actualizado correctamente');
+                    closeEditModal();
+                    // Recargar datos
+                    loadDoctorsTable();
+                    loadAllUsersTable();
+                } else {
+                    const error = await updateRes.json();
+                    throw new Error(error.error || 'Error al actualizar');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error al actualizar doctor: ' + err.message);
+            }
+        });
+        
+    } catch (err) {
+        console.error(err);
+        alert('Error: ' + err.message);
+    }
+}
+
+// Funciones similares para editPatient y editReservation...
+// (Implementación similar a editDoctor pero para pacientes y reservaciones)
+
+/**************************************
+ * Modal de Edición Genérico
+ **************************************/
+function showEditModal(content) {
+    const modal = document.createElement('div');
+    modal.id = 'editModal';
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.innerHTML = content;
+    
+    const closeSpan = document.createElement('span');
+    closeSpan.className = 'close';
+    closeSpan.innerHTML = '&times;';
+    closeSpan.onclick = closeEditModal;
+    
+    modalContent.prepend(closeSpan);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('editModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+/**************************************
  * Filtrado de tablas
  **************************************/
 // Filtrar filas en tablas admin según texto
@@ -627,7 +1096,6 @@ function addClickEventsToAdminRows() {
         const tbody = table.querySelector("tbody");
         if (!tbody || tbody.dataset.listenerAdded === "true") return;
 
-        // Detectar clic derecho (contextmenu)
         tbody.addEventListener("contextmenu", function (event) {
             event.preventDefault();
             const row = event.target.closest("tr");
@@ -639,7 +1107,6 @@ function addClickEventsToAdminRows() {
             currentRow = row;
             currentTableId = tableId;
             
-            // Mostrar menú en la posición del clic
             contextMenu.style.top = event.pageY + "px";
             contextMenu.style.left = event.pageX + "px";
             contextMenu.style.display = "block";
@@ -648,7 +1115,6 @@ function addClickEventsToAdminRows() {
         tbody.dataset.listenerAdded = "true";
     });
 
-    // Ocultar menú al hacer clic fuera
     document.addEventListener("click", () => {
         if (contextMenu.style.display === "block") {
             contextMenu.style.display = "none";
@@ -657,14 +1123,12 @@ function addClickEventsToAdminRows() {
         }
     });
 
-    // Manejar clic en opciones del menú
     contextMenu.addEventListener("click", (e) => {
         if (!e.target.classList.contains("context-menu-item")) return;
         const action = e.target.dataset.action;
         
         if (!currentRow || !currentTableId) return;
         
-        // Obtener ID de la fila seleccionada
         const id = currentRow.getAttribute("data-id");
         if (!id) {
             alert("No se pudo determinar el ID de la fila.");
@@ -676,12 +1140,10 @@ function addClickEventsToAdminRows() {
         
         switch(action) {
             case "edit":
-                alert(`Editar fila en tabla ${currentTableId} con ID ${id}`);
-                // Aquí llama a tu función para editar según tabla
-                // Ejemplo: editDoctor(id), editPatient(id), editReservation(id)
+                editEntity(currentTableId, id);  // Cambiamos esta línea
                 break;
             case "delete":
-                // Solo llama la función de eliminar, que ya tiene confirm
+                // Mantenemos la lógica existente de eliminación
                 if (currentTableId === "doctorsTable") {
                     deleteDoctor(id);
                 } else if (currentTableId === "patientsTable") {
@@ -690,8 +1152,6 @@ function addClickEventsToAdminRows() {
                     deleteReservation(id);
                 } else if (currentTableId === "usersTable") {
                     deleteUser(id);
-                } else {
-                    alert("Eliminar no implementado para esta tabla.");
                 }
                 break;
         }

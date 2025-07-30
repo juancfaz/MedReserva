@@ -204,8 +204,456 @@ app.get('/api/doctor/reservations', authenticateToken, (req, res) => {
   });
 });
 
+// Obtener un usuario específico
+app.get('/api/users/:id', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
 
+    db.get('SELECT * FROM users WHERE id = ?', [req.params.id], (err, user) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json(user);
+    });
+});
 
+// Obtener un doctor específico
+app.get('/api/doctors/:id', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+
+    db.get(`
+        SELECT d.*, u.role 
+        FROM doctors d
+        JOIN users u ON d.user_id = u.id
+        WHERE d.id = ?
+    `, [req.params.id], (err, doctor) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (!doctor) return res.status(404).json({ error: 'Doctor not found' });
+        res.json(doctor);
+    });
+});
+
+// Actualizar un usuario
+app.put('/api/users/:id', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+
+    const { name, email, role, phone, birthdate, gender, specialty } = req.body;
+    
+    if (!name || !email || !role) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    try {
+        // Verificar que el email no esté en uso por otro usuario
+        const emailCheck = await new Promise((resolve, reject) => {
+            db.get('SELECT id FROM users WHERE email = ? AND id != ?', 
+                  [email, req.params.id], (err, row) => {
+                if (err) reject(err);
+                resolve(row);
+            });
+        });
+
+        if (emailCheck) {
+            return res.status(409).json({ error: 'Email already in use' });
+        }
+
+        // Obtener el usuario actual para ver si cambia el rol
+        const currentUser = await new Promise((resolve, reject) => {
+            db.get('SELECT * FROM users WHERE id = ?', [req.params.id], (err, row) => {
+                if (err) reject(err);
+                resolve(row);
+            });
+        });
+
+        if (!currentUser) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Iniciar transacción
+        await new Promise((resolve, reject) => {
+            db.run('BEGIN TRANSACTION', (err) => {
+                if (err) reject(err);
+                resolve();
+            });
+        });
+
+        // 1. Actualizar usuario principal
+        await new Promise((resolve, reject) => {
+            db.run(
+                'UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?',
+                [name, email, role, req.params.id],
+                function(err) {
+                    if (err) reject(err);
+                    resolve();
+                }
+            );
+        });
+
+        // 2. Manejar pacientes
+        if (currentUser.role === 'patient' || role === 'patient') {
+            if (currentUser.role === role) {
+                // Mismo rol (patient), actualizar datos
+                await new Promise((resolve, reject) => {
+                    db.run(
+                        'UPDATE patients SET name = ?, email = ?, phone = ?, birthdate = ?, gender = ? WHERE user_id = ?',
+                        [name, email, phone || null, birthdate, gender, req.params.id],
+                        function(err) {
+                            if (err) reject(err);
+                            resolve();
+                        }
+                    );
+                });
+            } else if (currentUser.role === 'patient' && role !== 'patient') {
+                // Cambió de patient a otro rol, eliminar de patients
+                await new Promise((resolve, reject) => {
+                    db.run(
+                        'DELETE FROM patients WHERE user_id = ?',
+                        [req.params.id],
+                        function(err) {
+                            if (err) reject(err);
+                            resolve();
+                        }
+                    );
+                });
+            } else if (role === 'patient') {
+                // Cambió a patient, insertar en patients
+                if (!birthdate || !gender) {
+                    throw new Error('Missing patient fields: birthdate and gender are required');
+                }
+                
+                await new Promise((resolve, reject) => {
+                    db.run(
+                        'INSERT INTO patients (user_id, name, email, phone, birthdate, gender) VALUES (?, ?, ?, ?, ?, ?)',
+                        [req.params.id, name, email, phone || null, birthdate, gender],
+                        function(err) {
+                            if (err) reject(err);
+                            resolve();
+                        }
+                    );
+                });
+            }
+        }
+
+        // 3. Manejar doctores (mantenemos la lógica anterior)
+        if (currentUser.role === 'doctor' || role === 'doctor') {
+            if (currentUser.role === role) {
+                // Mismo rol (doctor), solo actualizar datos
+                await new Promise((resolve, reject) => {
+                    db.run(
+                        'UPDATE doctors SET name = ?, email = ? WHERE user_id = ?',
+                        [name, email, req.params.id],
+                        function(err) {
+                            if (err) reject(err);
+                            resolve();
+                        }
+                    );
+                });
+            } else if (currentUser.role === 'doctor' && role !== 'doctor') {
+                // Cambió de doctor a otro rol, eliminar de doctors
+                await new Promise((resolve, reject) => {
+                    db.run(
+                        'DELETE FROM doctors WHERE user_id = ?',
+                        [req.params.id],
+                        function(err) {
+                            if (err) reject(err);
+                            resolve();
+                        }
+                    );
+                });
+            } else if (role === 'doctor') {
+                // Cambió a doctor, insertar en doctors
+                await new Promise((resolve, reject) => {
+                    db.run(
+                        'INSERT INTO doctors (user_id, name, email, specialty, phone) VALUES (?, ?, ?, ?, ?)',
+                        [req.params.id, name, email, 'General', null], // Especialidad por defecto
+                        function(err) {
+                            if (err) reject(err);
+                            resolve();
+                        }
+                    );
+                });
+            }
+        }
+
+        // Confirmar transacción
+        await new Promise((resolve, reject) => {
+            db.run('COMMIT', (err) => {
+                if (err) reject(err);
+                resolve();
+            });
+        });
+
+        res.json({ message: 'User updated successfully' });
+    } catch (err) {
+        // Revertir transacción
+        await new Promise((resolve) => {
+            db.run('ROLLBACK', () => resolve());
+        });
+        
+        console.error('Error updating user:', err);
+        res.status(500).json({ error: err.message || 'Error updating user' });
+    }
+});
+
+// Actualizar un doctor
+app.put('/api/doctors/:id', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+
+    const { name, email, specialty, phone } = req.body;
+    
+    if (!name || !email || !specialty) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    try {
+        // Iniciar transacción
+        await new Promise((resolve, reject) => {
+            db.run('BEGIN TRANSACTION', (err) => {
+                if (err) reject(err);
+                resolve();
+            });
+        });
+
+        // 1. Obtener el user_id del doctor
+        const doctor = await new Promise((resolve, reject) => {
+            db.get('SELECT user_id FROM doctors WHERE id = ?', [req.params.id], (err, row) => {
+                if (err) reject(err);
+                resolve(row);
+            });
+        });
+
+        if (!doctor) {
+            return res.status(404).json({ error: 'Doctor not found' });
+        }
+
+        // 2. Actualizar info del doctor
+        await new Promise((resolve, reject) => {
+            db.run(
+                'UPDATE doctors SET name = ?, email = ?, specialty = ?, phone = ? WHERE id = ?',
+                [name, email, specialty, phone || null, req.params.id],
+                function(err) {
+                    if (err) reject(err);
+                    resolve();
+                }
+            );
+        });
+
+        // 3. Actualizar el usuario asociado
+        await new Promise((resolve, reject) => {
+            db.run(
+                'UPDATE users SET name = ?, email = ?, role = "doctor" WHERE id = ?',
+                [name, email, doctor.user_id],
+                function(err) {
+                    if (err) reject(err);
+                    resolve();
+                }
+            );
+        });
+
+        // Confirmar transacción
+        await new Promise((resolve, reject) => {
+            db.run('COMMIT', (err) => {
+                if (err) reject(err);
+                resolve();
+            });
+        });
+
+        res.json({ message: 'Doctor updated successfully' });
+    } catch (err) {
+        // Revertir transacción en caso de error
+        await new Promise((resolve) => {
+            db.run('ROLLBACK', () => resolve());
+        });
+        
+        console.error('Error updating doctor:', err);
+        res.status(500).json({ error: 'Error updating doctor' });
+    }
+});
+
+// Obtener información de doctor por user_id
+app.get('/api/user-doctor-info/:userId', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+
+    db.get(
+        'SELECT specialty, phone FROM doctors WHERE user_id = ?',
+        [req.params.userId],
+        (err, row) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
+            res.json(row || {});
+        }
+    );
+});
+
+// Obtener información de paciente por user_id
+app.get('/api/user-patient-info/:userId', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+
+    db.get(
+        'SELECT phone, birthdate, gender FROM patients WHERE user_id = ?',
+        [req.params.userId],
+        (err, row) => {
+            if (err) return res.status(500).json({ error: 'Database error' });
+            res.json(row || {});
+        }
+    );
+});
+
+// Obtener un paciente específico
+app.get('/api/patients/:id', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+
+    db.get(`
+        SELECT p.*, u.role 
+        FROM patients p
+        JOIN users u ON p.user_id = u.id
+        WHERE p.id = ?
+    `, [req.params.id], (err, row) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (!row) return res.status(404).json({ error: 'Patient not found' });
+        res.json(row);
+    });
+});
+
+// Actualizar un paciente
+app.put('/api/patients/:id', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+
+    const { name, email, phone, birthdate, gender } = req.body;
+    
+    if (!name || !email || !birthdate || !gender) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    try {
+        // Iniciar transacción
+        await new Promise((resolve, reject) => {
+            db.run('BEGIN TRANSACTION', (err) => {
+                if (err) reject(err);
+                resolve();
+            });
+        });
+
+        // 1. Obtener el user_id del paciente
+        const patient = await new Promise((resolve, reject) => {
+            db.get('SELECT user_id FROM patients WHERE id = ?', [req.params.id], (err, row) => {
+                if (err) reject(err);
+                resolve(row);
+            });
+        });
+
+        if (!patient) {
+            return res.status(404).json({ error: 'Patient not found' });
+        }
+
+        // 2. Actualizar info del paciente
+        await new Promise((resolve, reject) => {
+            db.run(
+                'UPDATE patients SET name = ?, email = ?, phone = ?, birthdate = ?, gender = ? WHERE id = ?',
+                [name, email, phone || null, birthdate, gender, req.params.id],
+                function(err) {
+                    if (err) reject(err);
+                    resolve();
+                }
+            );
+        });
+
+        // 3. Actualizar el usuario asociado
+        await new Promise((resolve, reject) => {
+            db.run(
+                'UPDATE users SET name = ?, email = ?, role = "patient" WHERE id = ?',
+                [name, email, patient.user_id],
+                function(err) {
+                    if (err) reject(err);
+                    resolve();
+                }
+            );
+        });
+
+        // Confirmar transacción
+        await new Promise((resolve, reject) => {
+            db.run('COMMIT', (err) => {
+                if (err) reject(err);
+                resolve();
+            });
+        });
+
+        res.json({ message: 'Patient updated successfully' });
+    } catch (err) {
+        // Revertir transacción en caso de error
+        await new Promise((resolve) => {
+            db.run('ROLLBACK', () => resolve());
+        });
+        
+        console.error('Error updating patient:', err);
+        res.status(500).json({ error: 'Error updating patient' });
+    }
+});
+
+// Obtener una reservación específica
+app.get('/api/reservations/:id', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+
+    db.get(`
+        SELECT r.id, r.date, r.reason, r.status,
+               p.name AS patient_name,
+               d.name AS doctor_name
+        FROM reservations r
+        LEFT JOIN patients p ON r.patient_id = p.id
+        LEFT JOIN doctors d ON r.doctor_id = d.id
+        WHERE r.id = ?
+    `, [req.params.id], (err, row) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        if (!row) return res.status(404).json({ error: 'Reservation not found' });
+        res.json(row);
+    });
+});
+
+// Actualizar una reservación
+app.put('/api/reservations/:id', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden: Admins only' });
+    }
+
+    const { date, reason, status } = req.body;
+    
+    if (!date || !status) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    if (!['pending', 'confirmed', 'cancelled', 'attended'].includes(status)) {
+        return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    db.run(
+        'UPDATE reservations SET date = ?, reason = ?, status = ? WHERE id = ?',
+        [date, reason || null, status, req.params.id],
+        function(err) {
+            if (err) {
+                console.error('Error updating reservation:', err);
+                return res.status(500).json({ error: 'Error updating reservation' });
+            }
+            res.json({ message: 'Reservation updated successfully' });
+        }
+    );
+});
+
+// Agregar endpoints similares para pacientes y reservaciones...
 
 app.get("/api/doctors", (req, res) => {
     db.all("SELECT id, name, specialty FROM doctors", [], (err, rows) => {
