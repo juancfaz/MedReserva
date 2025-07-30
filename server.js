@@ -45,43 +45,56 @@ app.post("/signup", (req, res) => {
         return res.status(400).json({ error: "Invalid role" });
     }
 
-    // Verificar que email no esté usado
+    // ✅ Validación anticipada de fecha de nacimiento
+    if (role === "patient") {
+        if (!birthdate || !gender) {
+            return res.status(400).json({ error: "Missing patient fields: birthdate, gender" });
+        }
+
+        const birthdates = new Date(birthdate);
+        const today = new Date();
+
+        // Quitar horas, minutos y segundos de ambas fechas
+        birthdates.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        if (birthdates.getFullYear() <= 1900 || birthdates >= today) {
+            return res.status(400).json({ error: "La fecha debe ser entre 1900 y hoy" });
+        }
+    }
+
+    // Validar campos de doctor si aplica
+    if (role === "doctor" && !specialty) {
+        return res.status(400).json({ error: "Missing doctor field: specialty" });
+    }
+
+    // 🔒 Verificar que email no esté en uso
     db.get("SELECT id FROM users WHERE email = ?", [email], (err, row) => {
         if (err) return res.status(500).json({ error: "Database error" });
         if (row) return res.status(409).json({ error: "Email already registered" });
 
-        // Insertar usuario
-        const insertUser = `INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)`;
-        db.run(insertUser, [name, email, password, role], function (err) {
+        // ✅ Solo ahora se inserta el usuario
+        db.run("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)", [name, email, password, role], function (err) {
             if (err) return res.status(500).json({ error: "Error creating user" });
 
             const userId = this.lastID;
 
-            // Insertar info extra según rol
+            // Insertar datos adicionales según el rol
             if (role === "patient") {
-                if (!birthdate || !gender) {
-                    return res.status(400).json({ error: "Missing patient fields: birthdate, gender" });
-                }
-
-                const insertPatient = ` INSERT INTO patients (user_id, name, email, phone, birthdate, gender) VALUES (?, ?, ?, ?, ?, ?)`;
-                db.run(insertPatient, [userId, name, email, phone || null, birthdate, gender], (err) => {
-                    if (err) return res.status(500).json({ error: "Error creating patient record" });
-                    return res.json({ message: "Patient registered successfully" });
-                });
+                db.run("INSERT INTO patients (user_id, name, email, phone, birthdate, gender) VALUES (?, ?, ?, ?, ?, ?)",
+                    [userId, name, email, phone || null, birthdate, gender], (err) => {
+                        if (err) return res.status(500).json({ error: "Error creating patient record" });
+                        return res.json({ message: "Patient registered successfully" });
+                    });
 
             } else if (role === "doctor") {
-                if (!specialty) {
-                    return res.status(400).json({ error: "Missing doctor field: specialty" });
-                }
-
-                const insertDoctor = ` INSERT INTO doctors (user_id, name, email, specialty, phone) VALUES (?, ?, ?, ?, ?) `;
-                db.run(insertDoctor, [userId, name, email, specialty, phone || null], (err) => {
-                    if (err) return res.status(500).json({ error: "Error creating doctor record" });
-                    return res.json({ message: "Doctor registered successfully" });
-                });
+                db.run("INSERT INTO doctors (user_id, name, email, specialty, phone) VALUES (?, ?, ?, ?, ?)",
+                    [userId, name, email, specialty, phone || null], (err) => {
+                        if (err) return res.status(500).json({ error: "Error creating doctor record" });
+                        return res.json({ message: "Doctor registered successfully" });
+                    });
 
             } else {
-                // admin, no info extra
                 return res.json({ message: "Admin registered successfully" });
             }
         });
