@@ -141,6 +141,28 @@
         </table>
       </div>
 
+      <div id="doctorFilters" style="margin-bottom: 1.5em;">
+      <label for="appointmentSearch">🔍 Buscar paciente:</label>
+      <input type="text" id="appointmentSearch" placeholder="Nombre o correo..." style="padding: 0.4em; margin-right: 1em;" />
+
+      <label for="statusFilter">📌 Estado:</label>
+      <select id="statusFilter" style="padding: 0.4em; margin-right: 1em;">
+        <option value="">Todos</option>
+        <option value="pending">Pendiente</option>
+        <option value="confirmed">Confirmada</option>
+        <option value="cancelled">Cancelada</option>
+        <option value="attended">Atendida</option>
+      </select>
+
+      <label for="dateFilter">📅 Fecha:</label>
+      <select id="dateFilter" style="padding: 0.4em;">
+        <option value="">Todas</option>
+        <option value="today">Hoy</option>
+        <option value="week">Esta semana</option>
+        <option value="past">Pasadas</option>
+      </select>
+    </div>
+
       <!-- DASHBOARD DOCTOR -->
       <div id="doctorAppointmentsSection" style="display:none;">
         <h2 style="text-align: center; margin-bottom: 2em;">Mis Citas</h2>

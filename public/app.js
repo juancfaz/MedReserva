@@ -102,8 +102,10 @@ function showUserInfo() {
         if (user.role === 'doctor') {
             document.getElementById('doctorAppointmentsSection').style.display = 'block';
             loadDoctorAppointments();
+            document.getElementById('doctorFilters').style.display = 'block';
         } else {
             document.getElementById('doctorAppointmentsSection').style.display = 'none';
+            document.getElementById('doctorFilters').style.display = 'none';
         }
     })
     .catch(() => {
@@ -458,62 +460,108 @@ async function loadAllUsersTable() {
 }
 
 async function loadDoctorAppointments() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    
-    try {
-        const res = await fetch('/api/doctor/reservations', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        const data = await res.json();
-        console.log('Respuesta completa de la API:', data);
-        
-        if (!Array.isArray(data)) {
-            throw new Error('La respuesta no es un arreglo. Es: ' + JSON.stringify(data));
-        }
-        
-        const table = document.getElementById('doctorAppointmentsTableBody');
-        table.innerHTML = '';
-        
-        if (data.length === 0) {
-            table.innerHTML = '<tr><td colspan="5">No hay citas registradas.</td></tr>';
-            return;
-        }
-        
-        data.forEach(app => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${app.patient_name}</td>
-                <td>${app.patient_email}</td>
-                <td>${app.reason}</td>
-                <td>${app.date}</td>
-                <td>
-                    ${app.status}
-                    <div style="margin-top: 0.5em;">
-                        ${app.status === 'pending' ? `
-                            <button onclick="updateAppointmentStatus(${app.id}, 'confirmed')">✔ Confirmar</button>
-                            <button onclick="updateAppointmentStatus(${app.id}, 'cancelled')">✖ Cancelar</button>
-                        ` : ''}
+  const token = localStorage.getItem('token');
+  if (!token) return;
 
-                        ${app.status === 'confirmed' ? `
-                            <button onclick="updateAppointmentStatus(${app.id}, 'attended')">🩺 Atendida</button>
-                            <button onclick="updateAppointmentStatus(${app.id}, 'pending')">↩️ Volver a pendiente</button>
-                        ` : ''}
+  try {
+    const res = await fetch('/api/doctor/reservations', {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
 
-                        ${app.status === 'cancelled' ? `
-                            <button onclick="updateAppointmentStatus(${app.id}, 'pending')">↩️ Reactivar</button>
-                        ` : ''}
-                    </div>
-                </td>
-            `;
-            table.appendChild(row);
-        });
-    } catch (err) {
-        console.error('Error al cargar citas del doctor:', err.message);
-    }
+    const data = await res.json();
+    console.log('Respuesta completa de la API:', data);
+    if (!Array.isArray(data)) throw new Error('Respuesta inesperada');
+
+    // Guardamos una copia global para filtrar dinámicamente
+    window.doctorAppointmentsData = data;
+    renderDoctorAppointments(data);
+  } catch (err) {
+    console.error('Error al cargar citas del doctor:', err.message);
+  }
 }
+
+function renderDoctorAppointments(data) {
+  const search = document.getElementById('appointmentSearch')?.value?.toLowerCase() || "";
+  const status = document.getElementById('statusFilter')?.value || "";
+  const dateFilter = document.getElementById('dateFilter')?.value || "";
+  const now = new Date();
+
+  const table = document.getElementById('doctorAppointmentsTableBody');
+  table.innerHTML = '';
+
+  const filtered = data.filter(app => {
+    const patientName = app.patient_name?.toLowerCase() || "";
+    const patientEmail = app.patient_email?.toLowerCase() || "";
+    const appDate = new Date(app.date);
+
+    let matchesSearch = patientName.includes(search) || patientEmail.includes(search);
+    let matchesStatus = !status || app.status === status;
+
+    let matchesDate = true;
+    if (dateFilter === 'today') {
+      const isToday = appDate.toDateString() === now.toDateString();
+      matchesDate = isToday;
+    } else if (dateFilter === 'week') {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay()); // Domingo
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6); // Sábado
+      matchesDate = appDate >= startOfWeek && appDate <= endOfWeek;
+    } else if (dateFilter === 'past') {
+      matchesDate = appDate < now;
+    }
+
+    return matchesSearch && matchesStatus && matchesDate;
+  });
+
+  if (filtered.length === 0) {
+    table.innerHTML = '<tr><td colspan="5">No hay citas que coincidan con los filtros.</td></tr>';
+    return;
+  }
+
+  filtered.forEach(app => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${app.patient_name}</td>
+      <td>${app.patient_email}</td>
+      <td>${app.reason}</td>
+      <td>${new Date(app.date).toLocaleString()}</td>
+      <td>
+        ${app.status}
+        <div style="margin-top: 0.5em;">
+          ${app.status === 'pending' ? `
+            <button onclick="updateAppointmentStatus(${app.id}, 'confirmed')">✔ Confirmar</button>
+            <button onclick="updateAppointmentStatus(${app.id}, 'cancelled')">✖ Cancelar</button>
+          ` : ''}
+
+          ${app.status === 'confirmed' ? `
+            <button onclick="updateAppointmentStatus(${app.id}, 'attended')">🩺 Atendida</button>
+            <button onclick="updateAppointmentStatus(${app.id}, 'pending')">↩️ Pendiente</button>
+          ` : ''}
+
+          ${app.status === 'cancelled' ? `
+            <button onclick="updateAppointmentStatus(${app.id}, 'pending')">↩️ Reactivar</button>
+          ` : ''}
+        </div>
+      </td>
+    `;
+    table.appendChild(row);
+  });
+}
+
+document.getElementById('appointmentSearch')?.addEventListener('input', () => {
+renderDoctorAppointments(window.doctorAppointmentsData || []);
+});
+
+document.getElementById('statusFilter')?.addEventListener('change', () => {
+renderDoctorAppointments(window.doctorAppointmentsData || []);
+});
+
+document.getElementById('dateFilter')?.addEventListener('change', () => {
+renderDoctorAppointments(window.doctorAppointmentsData || []);
+});
 
 /**************************************
  * Cambiar y eliminar datos
