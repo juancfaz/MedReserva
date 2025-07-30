@@ -253,10 +253,35 @@ document.getElementById('signupForm').addEventListener('submit', async (e) => {
 });
 
 // Mostrar campos personalizados en signup según rol
-document.getElementById("signupRole").addEventListener("change", function () {
-    const role = this.value;
-    document.getElementById("patientFields").style.display = role === "patient" ? "block" : "none";
-    document.getElementById("doctorFields").style.display = role === "doctor" ? "block" : "none";
+document.getElementById("signupRole").addEventListener("change", (e) => {
+    const role = e.target.value;
+    const patientFields = document.getElementById("patientFields");
+    const doctorFields = document.getElementById("doctorFields");
+
+    if (role === "patient") {
+        patientFields.style.display = "block";
+        doctorFields.style.display = "none";
+
+        // Habilitar campos requeridos del paciente
+        document.getElementById("birthdate").required = true;
+        document.getElementById("gender").required = true;
+        document.getElementById("specialty").required = false;
+    } else if (role === "doctor") {
+        patientFields.style.display = "none";
+        doctorFields.style.display = "block";
+
+        // Deshabilitar los del paciente
+        document.getElementById("birthdate").required = false;
+        document.getElementById("gender").required = false;
+        document.getElementById("specialty").required = true;
+    } else {
+        patientFields.style.display = "none";
+        doctorFields.style.display = "none";
+
+        document.getElementById("birthdate").required = false;
+        document.getElementById("gender").required = false;
+        document.getElementById("specialty").required = false;
+    }
 });
 
 /**************************************
