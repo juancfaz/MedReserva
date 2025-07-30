@@ -141,6 +141,14 @@ app.post("/reserve", authenticateToken, (req, res) => {
         return res.status(400).json({ error: "Faltan campos obligatorios" });
     }
 
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(23, 59, 59,);
+
+    if (selectedDate <= today) {
+        return res.status(400).json({ error: "La fecha debe ser a partir de mañana" });
+    }
+
     db.get("SELECT id FROM patients WHERE email = ?", [patientEmail], (err, patient) => {
         if (err || !patient) {
             return res.status(404).json({ error: "Paciente no encontrado" });
