@@ -5,7 +5,7 @@ MedReserva es una aplicación web full-stack para la gestión de citas médicas,
 
 ## Características Principales
 
-### 🚀 Funcionalidades Clave
+### Funcionalidades Clave
 - **Sistema de autenticación seguro** con JWT y manejo de sesiones
 - **Tres roles de usuarios**:
   - **Pacientes**: Pueden agendar, ver y cancelar citas
