@@ -62,8 +62,10 @@ MedReserva es una aplicación web full-stack para la gestión de citas médicas,
     node server.js
     ```
 4. Abre tu navegador en:
+   ```bash
     http://localhost:3000/  
-
+    ```
+   
 ## Estructura del Proyecto
 
     /ReservationSystem
