@@ -626,31 +626,66 @@ app.get('/api/reservations/:id', authenticateToken, (req, res) => {
 
 // Actualizar una reservación
 app.put('/api/reservations/:id', authenticateToken, (req, res) => {
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Forbidden: Admins only' });
-    }
 
-    const { date, reason, status } = req.body;
+    if (req.user.role === 'admin') {
+        const { date, reason, status } = req.body;
     
-    if (!date || !status) {
-        return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-    if (!['pending', 'confirmed', 'cancelled', 'attended'].includes(status)) {
-        return res.status(400).json({ error: 'Invalid status' });
-    }
-
-    db.run(
-        'UPDATE reservations SET date = ?, reason = ?, status = ? WHERE id = ?',
-        [date, reason || null, status, req.params.id],
-        function(err) {
-            if (err) {
-                console.error('Error updating reservation:', err);
-                return res.status(500).json({ error: 'Error updating reservation' });
-            }
-            res.json({ message: 'Reservation updated successfully' });
+        if (!date || !status) {
+            return res.status(400).json({ error: 'Missing required fields' });
         }
-    );
+
+        if (!['pending', 'confirmed', 'cancelled', 'attended'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+
+        db.run(
+            'UPDATE reservations SET date = ?, reason = ?, status = ? WHERE id = ?',
+            [date, reason || null, status, req.params.id],
+            function(err) {
+                if (err) {
+                    console.error('Error updating reservation:', err);
+                    return res.status(500).json({ error: 'Error updating reservation' });
+                }
+                res.json({ message: 'Reservation updated successfully' });
+            }
+        );
+    } else if (req.user.role === 'doctor') {
+        const doctorUserId = req.user.id;
+
+        // Obtener ID interno del doctor
+        db.get('SELECT id FROM doctors WHERE user_id = ?', [doctorUserId], (err, doctor) => {
+            if (err || !doctor) {
+                return res.status(500).json({ error: 'Doctor no encontrado' });
+            }
+
+            const doctorId = doctor.id;
+
+            // Verificar si la reservación pertenece a ese doctor
+            db.get('SELECT * FROM reservations WHERE id = ? AND doctor_id = ?', [req.params.id, doctorId], (err, resv) => {
+                if (err || !resv) {
+                    return res.status(403).json({ error: 'No tienes permiso para modificar esta reserva' });
+                }
+
+                const { status } = req.body;
+                if (!['pending', 'confirmed', 'cancelled', 'attended'].includes(status)) {
+                    return res.status(400).json({ error: 'Estado inválido' });
+                }
+
+                db.run(
+                    'UPDATE reservations SET status = ? WHERE id = ?',
+                    [status, req.params.id],
+                    function(err) {
+                        if (err) {
+                            return res.status(500).json({ error: 'Error actualizando estado' });
+                        }
+                        res.json({ message: 'Estado actualizado correctamente' });
+                    }
+                );
+            });
+        });
+    } else {
+        return res.status(403).json({ error: 'Solo doctores o administradores pueden actualizar reservas' });
+    }
 });
 
 // Agregar endpoints similares para pacientes y reservaciones...
@@ -785,7 +820,7 @@ app.delete('/api/reservations/:id', authenticateToken, async (req, res) => {
         else resolve(this); // `this.changes`
       });
     });
-    
+
     if (result.changes === 0) {
       return res.status(404).json({ error: 'Reserva no encontrada' });
     }

@@ -345,6 +345,31 @@ async function loadDoctorsTable() {
     }
 }
 
+async function updateAppointmentStatus(reservationId, newStatus) {
+    const token = getToken();
+    try {
+        const res = await fetch(`/api/reservations/${reservationId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ status: newStatus, date: new Date().toISOString() }) // date obligatorio
+        });
+
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.error || 'Error al actualizar');
+        }
+
+        alert('Estado actualizado a ' + newStatus);
+        loadDoctorAppointments(); // refresca la tabla
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+}
+
+
 // Cargar y mostrar tabla de pacientes
 async function loadPatientsTable() {
     try {
@@ -464,7 +489,24 @@ async function loadDoctorAppointments() {
                 <td>${app.patient_email}</td>
                 <td>${app.reason}</td>
                 <td>${app.date}</td>
-                <td>${app.status}</td>
+                <td>
+                    ${app.status}
+                    <div style="margin-top: 0.5em;">
+                        ${app.status === 'pending' ? `
+                            <button onclick="updateAppointmentStatus(${app.id}, 'confirmed')">✔ Confirmar</button>
+                            <button onclick="updateAppointmentStatus(${app.id}, 'cancelled')">✖ Cancelar</button>
+                        ` : ''}
+
+                        ${app.status === 'confirmed' ? `
+                            <button onclick="updateAppointmentStatus(${app.id}, 'attended')">🩺 Atendida</button>
+                            <button onclick="updateAppointmentStatus(${app.id}, 'pending')">↩️ Volver a pendiente</button>
+                        ` : ''}
+
+                        ${app.status === 'cancelled' ? `
+                            <button onclick="updateAppointmentStatus(${app.id}, 'pending')">↩️ Reactivar</button>
+                        ` : ''}
+                    </div>
+                </td>
             `;
             table.appendChild(row);
         });
