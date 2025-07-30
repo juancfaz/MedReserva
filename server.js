@@ -647,8 +647,8 @@ app.get('/api/reservations/:id', authenticateToken, (req, res) => {
 
 // Actualizar una reservación
 app.put('/api/reservations/:id', authenticateToken, (req, res) => {
-
     if (req.user.role === 'admin') {
+        // Lógica existente para administradores
         const { date, reason, status } = req.body;
     
         if (!date || !status) {
@@ -671,6 +671,7 @@ app.put('/api/reservations/:id', authenticateToken, (req, res) => {
             }
         );
     } else if (req.user.role === 'doctor') {
+        // Lógica existente para doctores
         const doctorUserId = req.user.id;
 
         // Obtener ID interno del doctor
@@ -704,8 +705,63 @@ app.put('/api/reservations/:id', authenticateToken, (req, res) => {
                 );
             });
         });
+    } else if (req.user.role === 'patient') {
+        // Nueva lógica para pacientes
+        const { status } = req.body;
+        
+        // Validar que solo pueda cancelar (no otros cambios)
+        if (status !== 'cancelled') {
+            return res.status(403).json({ error: 'Solo puedes cancelar citas' });
+        }
+
+        // Verificar que la cita pertenece a este paciente
+        db.get(`
+            SELECT r.id, r.date, r.status 
+            FROM reservations r
+            JOIN patients p ON r.patient_id = p.id
+            WHERE r.id = ? AND p.user_id = ?
+        `, [req.params.id, req.user.id], (err, reservation) => {
+            if (err) {
+                console.error('Error verificando reservación:', err);
+                return res.status(500).json({ error: 'Error al verificar la reservación' });
+            }
+            
+            if (!reservation) {
+                return res.status(403).json({ error: 'No tienes permiso para modificar esta cita' });
+            }
+
+            // Validar que la cita no esté ya cancelada o atendida
+            if (reservation.status === 'cancelled') {
+                return res.status(400).json({ error: 'La cita ya está cancelada' });
+            }
+
+            if (reservation.status === 'attended') {
+                return res.status(400).json({ error: 'No puedes cancelar una cita ya atendida' });
+            }
+
+            // Validar que la cita no sea pasada
+            const now = new Date();
+            const appointmentDate = new Date(reservation.date);
+            
+            if (appointmentDate < now) {
+                return res.status(400).json({ error: 'No puedes cancelar una cita pasada' });
+            }
+
+            // Actualizar el estado a cancelado
+            db.run(
+                'UPDATE reservations SET status = ? WHERE id = ?',
+                ['cancelled', req.params.id],
+                function(err) {
+                    if (err) {
+                        console.error('Error cancelando cita:', err);
+                        return res.status(500).json({ error: 'Error al cancelar la cita' });
+                    }
+                    res.json({ message: 'Cita cancelada correctamente' });
+                }
+            );
+        });
     } else {
-        return res.status(403).json({ error: 'Solo doctores o administradores pueden actualizar reservas' });
+        return res.status(403).json({ error: 'No tienes permisos para modificar reservas' });
     }
 });
 
@@ -858,4 +914,38 @@ app.get("/api/users", (req, res) => {
         if (err) return res.status(500).json({ error: "Error al obtener usuarios" });
         res.json(rows);
     });
+});
+
+// Obtener reservaciones del paciente actual
+app.get('/api/patient/reservations', authenticateToken, (req, res) => {
+  if (req.user.role !== 'patient') {
+    return res.status(403).json({ error: 'Forbidden: Patients only' });
+  }
+
+  const patientEmail = req.user.email;
+
+  db.get('SELECT id FROM patients WHERE email = ?', [patientEmail], (err, patient) => {
+    if (err || !patient) {
+      return res.status(404).json({ error: 'Paciente no encontrado' });
+    }
+
+    const patientId = patient.id;
+
+    db.all(`
+      SELECT r.id, r.date, r.reason, r.status,
+             d.name AS doctor_name,
+             d.specialty,
+             d.phone AS doctor_phone
+      FROM reservations r
+      JOIN doctors d ON r.doctor_id = d.id
+      WHERE r.patient_id = ?
+      ORDER BY r.date DESC
+    `, [patientId], (err, rows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Error al obtener reservas' });
+      }
+      res.json(rows);
+    });
+  });
 });

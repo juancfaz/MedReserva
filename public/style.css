@@ -251,3 +251,36 @@ footer {
   background-color: #e0f2fe;
   cursor: default;
 }
+
+/* Estilo para botones de cancelar */
+.cancel-btn {
+  background-color: #f87171;
+  color: white;
+  border: none;
+  padding: 0.5em 1em;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cancel-btn:hover {
+  background-color: #ef4444;
+}
+
+/* Estilo para estado cancelado */
+.status-cancelled {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+/* Estilo para estado pendiente */
+.status-pending {
+  color: #f59e0b;
+  font-weight: bold;
+}
+
+/* Estilo para estado confirmado */
+.status-confirmed {
+  color: #10b981;
+  font-weight: bold;
+}

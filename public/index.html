@@ -179,6 +179,55 @@
           <tbody id="doctorAppointmentsTableBody"></tbody>
         </table>
       </div>
+
+      <!-- Agregar esto en la sección HOW IT WORKS PARA USUARIOS AUTENTICADOS -->
+      <div id="patientAppointmentsSection" style="display: none;">
+        <h2 style="text-align: center; margin-bottom: 1em;">Mis Citas Médicas</h2>
+        
+        <div id="patientFilters" style="margin-bottom: 1.5em; display: flex; gap: 1em; flex-wrap: wrap;">
+          <div>
+            <label for="patientAppointmentSearch">🔍 Buscar médico:</label>
+            <input type="text" id="patientAppointmentSearch" placeholder="Nombre o especialidad..." style="padding: 0.4em;">
+          </div>
+          
+          <div>
+            <label for="patientStatusFilter">📌 Estado:</label>
+            <select id="patientStatusFilter" style="padding: 0.4em;">
+              <option value="">Todos</option>
+              <option value="pending">Pendiente</option>
+              <option value="confirmed">Confirmada</option>
+              <option value="cancelled">Cancelada</option>
+              <option value="attended">Atendida</option>
+            </select>
+          </div>
+          
+          <div>
+            <label for="patientDateFilter">📅 Fecha:</label>
+            <select id="patientDateFilter" style="padding: 0.4em;">
+              <option value="">Todas</option>
+              <option value="today">Hoy</option>
+              <option value="upcoming">Próximas</option>
+              <option value="past">Pasadas</option>
+            </select>
+          </div>
+        </div>
+
+        <table class="common-table" border="1" cellpadding="5" cellspacing="0" style="width: 100%;">
+          <thead>
+            <tr>
+              <th>Médico</th>
+              <th>Especialidad</th>
+              <th>Fecha y Hora</th>
+              <th>Motivo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="patientAppointmentsTableBody">
+            <!-- Las filas se generarán dinámicamente -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 

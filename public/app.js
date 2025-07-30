@@ -99,6 +99,14 @@ function showUserInfo() {
             document.getElementById("adminDashboard").style.display = "none";
         }
 
+        if (user.role === "patient") {
+            reservationContainer && (reservationContainer.style.display = "block");
+            document.getElementById("patientAppointmentsSection").style.display = "block";
+            loadPatientAppointments(); // Nueva función
+        } else {
+            document.getElementById("patientAppointmentsSection").style.display = "none";
+        }
+
         if (user.role === 'doctor') {
             document.getElementById('doctorAppointmentsSection').style.display = 'block';
             loadDoctorAppointments();
@@ -586,6 +594,137 @@ renderDoctorAppointments(window.doctorAppointmentsData || []);
 
 document.getElementById('dateFilter')?.addEventListener('change', () => {
 renderDoctorAppointments(window.doctorAppointmentsData || []);
+});
+
+// Cargar citas del paciente
+async function loadPatientAppointments() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/patient/reservations', {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error('Respuesta inesperada');
+
+    // Guardar datos para filtrado
+    window.patientAppointmentsData = data;
+    renderPatientAppointments(data);
+  } catch (err) {
+    console.error('Error al cargar citas del paciente:', err.message);
+    alert('Error al cargar tus citas médicas');
+  }
+}
+
+// Renderizar citas del paciente con filtros
+function renderPatientAppointments(data) {
+  const search = document.getElementById('patientAppointmentSearch')?.value?.toLowerCase() || "";
+  const status = document.getElementById('patientStatusFilter')?.value || "";
+  const dateFilter = document.getElementById('patientDateFilter')?.value || "";
+  const now = new Date();
+
+  const table = document.getElementById('patientAppointmentsTableBody');
+  table.innerHTML = '';
+
+  const filtered = data.filter(app => {
+    const doctorName = app.doctor_name?.toLowerCase() || "";
+    const specialty = app.specialty?.toLowerCase() || "";
+    const appDate = new Date(app.date);
+    
+    // Aplicar filtros
+    const matchesSearch = doctorName.includes(search) || specialty.includes(search);
+    const matchesStatus = !status || app.status === status;
+    
+    let matchesDate = true;
+    if (dateFilter === 'today') {
+      matchesDate = appDate.toDateString() === now.toDateString();
+    } else if (dateFilter === 'upcoming') {
+      matchesDate = appDate > now;
+    } else if (dateFilter === 'past') {
+      matchesDate = appDate < now;
+    }
+    
+    return matchesSearch && matchesStatus && matchesDate;
+  });
+
+  if (filtered.length === 0) {
+    table.innerHTML = '<tr><td colspan="6">No tienes citas que coincidan con los filtros.</td></tr>';
+    return;
+  }
+
+  // Mostrar citas filtradas
+  filtered.forEach(app => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${app.doctor_name}</td>
+      <td>${app.specialty}</td>
+      <td>${new Date(app.date).toLocaleString()}</td>
+      <td>${app.reason || '-'}</td>
+      <td>${translateStatus(app.status)}</td>
+      <td>
+        ${['pending', 'confirmed'].includes(app.status) ? `
+          <button class="cancel-btn" onclick="cancelPatientAppointment(${app.id})">
+            ✖ Cancelar
+          </button>
+        ` : 'No disponible'}
+      </td>
+    `;
+    table.appendChild(row);
+  });
+}
+
+// Traducir estados al español
+function translateStatus(status) {
+  const statusMap = {
+    'pending': 'Pendiente',
+    'confirmed': 'Confirmada',
+    'cancelled': 'Cancelada',
+    'attended': 'Atendida'
+  };
+  return statusMap[status] || status;
+}
+
+// Cancelar cita
+async function cancelPatientAppointment(id) {
+  if (!confirm('¿Estás seguro de que quieres cancelar esta cita?')) return;
+  
+  try {
+    const res = await fetch(`/api/reservations/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + localStorage.getItem('token')
+      },
+      body: JSON.stringify({ status: 'cancelled', date: new Date().toISOString() })
+    });
+
+    if (res.ok) {
+      alert('Cita cancelada correctamente');
+      loadPatientAppointments();
+    } else {
+      throw new Error('Error al cancelar la cita');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Error: ' + err.message);
+  }
+}
+
+// Event listeners para los filtros
+document.getElementById('patientAppointmentSearch')?.addEventListener('input', () => {
+  renderPatientAppointments(window.patientAppointmentsData || []);
+});
+
+document.getElementById('patientStatusFilter')?.addEventListener('change', () => {
+  renderPatientAppointments(window.patientAppointmentsData || []);
+});
+
+document.getElementById('patientDateFilter')?.addEventListener('change', () => {
+  renderPatientAppointments(window.patientAppointmentsData || []);
 });
 
 /**************************************
