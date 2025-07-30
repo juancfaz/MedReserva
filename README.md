@@ -50,8 +50,8 @@ MedReserva es una aplicación web full-stack para la gestión de citas médicas,
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/ReservationSystem.git
-    cd ReservationSystem
+    git clone https://github.com/yourusername/MedReserva.git
+    cd MedReserva
     ```
 2. Instalar dependencias:
     ```bash
@@ -68,7 +68,7 @@ MedReserva es una aplicación web full-stack para la gestión de citas médicas,
    
 ## Estructura del Proyecto
 
-    /ReservationSystem
+    /MedReserva
     │
     ├── /public
     │   ├── index.html          # Página principal
