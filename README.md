@@ -94,5 +94,3 @@ MedReserva es una aplicación web full-stack para la gestión de citas médicas,
 - **Para Administradores**
 1. Dashboard completo: Gestión de usuarios (crear, editar, eliminar). Visualización de todas las citas del sistema. Estadísticas y reportes básicos. Administración de perfiles médicos.
 
-## Créditos
-Desarrollado por Juan Faz como proyecto profesional full-stack, combinando tecnologías modernas para crear una solución completa de gestión médica.
